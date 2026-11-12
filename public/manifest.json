@@ -1,0 +1,51 @@
+{
+  "id": "/?source=pwa",
+  "name": "SurveyForm — Universal Survey Platform",
+  "short_name": "SurveyForm",
+  "description": "Universal PDF-to-Survey & Evaluation Platform with Likert Analytics & Recognition Certificates",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
+  "background_color": "#090e14",
+  "theme_color": "#10b981",
+  "orientation": "any",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Survey from PDF",
+      "short_name": "New Survey",
+      "description": "Upload a PDF survey questionnaire to parse and distribute",
+      "url": "/surveys/new",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "All Surveys",
+      "short_name": "Surveys",
+      "description": "View responses and analytics dashboard",
+      "url": "/surveys",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
+

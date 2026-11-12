@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5" />
+  <title>Offline — SurveyForm</title>
+  <meta name="theme-color" content="#10b981" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0 !important;
+    }
+    body {
+      background-color: #090e14;
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      text-align: center;
+      background-image: linear-gradient(to right, #131b26 1px, transparent 1px),
+                        linear-gradient(to bottom, #131b26 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .card {
+      background: #0d141e;
+      border: 1px solid #1e293b;
+      max-width: 440px;
+      width: 100%;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .logo {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.5rem auto;
+      display: block;
+    }
+    .badge {
+      display: inline-block;
+      font-family: monospace;
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.1);
+      padding: 0.25rem 0.625rem;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.75rem;
+    }
+    p {
+      color: #94a3b8;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      margin-bottom: 1.75rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #10b981;
+      color: #042f2e;
+      font-family: monospace;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.15s ease;
+    }
+    .btn:hover {
+      background: #00e599;
+    }
+    .footer-note {
+      margin-top: 1.5rem;
+      font-family: monospace;
+      font-size: 0.6875rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="/icons/brand-logo.png" alt="SurveyForm Logo" class="logo" />
+    <div class="badge">No Internet Connection</div>
+    <h1>You are Currently Offline</h1>
+    <p>
+      SurveyForm requires an active connection to fetch real-time survey schemas and save completed responses to the database.
+    </p>
+    <button class="btn" onclick="window.location.reload()">
+      Retry Connection
+    </button>
+    <div class="footer-note">
+      SurveyForm PWA Shell v1.0
+    </div>
+  </div>
+</body>
+</html>
+
