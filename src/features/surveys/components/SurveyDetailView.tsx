@@ -16,6 +16,7 @@ import { ResponsesTable } from "@/features/responses/components/ResponsesTable";
 import { SurveyFormBuilder } from "./SurveyFormBuilder";
 import { ShareModal } from "./ShareModal";
 import { SignatorySettingsCard, SignatoryData } from "@/features/certificates/components/SignatorySettingsCard";
+import { deviceSessionService } from "@/services/session/deviceSessionService";
 import { cn } from "@/lib/utils";
 import {
   Share2,
@@ -26,6 +27,7 @@ import {
   ArrowLeft,
   Award,
   Calculator,
+  ShieldAlert,
 } from "lucide-react";
 
 export function SurveyDetailView({ id }: { id: string }) {
@@ -35,6 +37,7 @@ export function SurveyDetailView({ id }: { id: string }) {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("analytics");
   const [isSavingSignatory, setIsSavingSignatory] = useState(false);
+  const [isOwner, setIsOwner] = useState(true);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -42,6 +45,9 @@ export function SurveyDetailView({ id }: { id: string }) {
       const s = await surveyService.getSurveyById(id);
       if (s) {
         setSurvey(s);
+        const creatorId = s.schema?.settings?.creatorDeviceId || s.creator_device_id;
+        const owns = deviceSessionService.isOwner(s.id, creatorId);
+        setIsOwner(owns);
         const r = await surveyService.getSurveyResponses(s.id);
         setResponses(r);
       }
@@ -58,6 +64,38 @@ export function SurveyDetailView({ id }: { id: string }) {
 
   if (isLoading || !survey) {
     return <LoadingState message="Loading survey analytics & responses..." />;
+  }
+
+  if (!isOwner && survey) {
+    return (
+      <div className="max-w-xl mx-auto py-16 px-4 text-center space-y-6">
+        <div className="size-14 border border-destructive/40 bg-destructive/10 text-destructive mx-auto flex items-center justify-center">
+          <ShieldAlert className="size-7" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-bold font-heading text-foreground uppercase tracking-tight">
+            Survey Management Restricted
+          </h2>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            This survey was created by another device or researcher session. To protect research integrity and prevent unauthorized modifications, editing and administration are restricted to the creator&apos;s device.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <Link href={`/s/${survey.id}`}>
+            <Button size="default" className="rounded-none font-mono text-xs uppercase tracking-wider gap-2">
+              <ExternalLink className="size-3.5" />
+              <span>Answer Public Form</span>
+            </Button>
+          </Link>
+          <Link href="/surveys">
+            <Button variant="outline" size="default" className="rounded-none font-mono text-xs uppercase tracking-wider">
+              Return to My Surveys
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const handleResponseUpdated = (updated: SurveyResponse) => {

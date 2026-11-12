@@ -34,7 +34,7 @@ export function SurveyList() {
   const loadSurveys = async () => {
     setIsLoading(true);
     try {
-      const data = await surveyService.getAllSurveys();
+      const data = await surveyService.getMySurveys();
       setSurveys(data);
     } catch (e) {
       console.error(e);
@@ -71,7 +71,13 @@ export function SurveyList() {
       {/* Page Header */}
       <PageHeader
         title="Survey Management"
-        description="Create, monitor, and tailor surveys from PDFs. Distribute public links and analyze results."
+        description="Manage surveys created on this device. Device sessions are preserved locally even across device restarts."
+        badge={
+          <Badge variant="outline" className="border-emerald-500/40 text-emerald-400 bg-emerald-500/10 font-mono text-[10px] rounded-none gap-1">
+            <CheckCircle2 className="size-3 text-emerald-400" />
+            Saved Device Session
+          </Badge>
+        }
       >
         <Link href="/surveys/new">
           <Button size="default" className="gap-2 rounded-none font-mono text-xs uppercase tracking-wider">
@@ -112,8 +118,8 @@ export function SurveyList() {
 
         {surveys.length === 0 ? (
           <EmptyState
-            title="No surveys found"
-            description="Drag and drop your survey questionnaire PDF to automatically generate a digital survey form."
+            title="No surveys created on this device"
+            description="Surveys you create on this computer or phone are saved to this device's persistent session. You haven't created any surveys from this browser yet."
             actionText="Import Survey PDF"
             onAction={() => (window.location.href = "/surveys/new")}
           />

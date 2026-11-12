@@ -1,6 +1,7 @@
 import { createClient, isSupabaseConfigured } from "@/services/supabase/client";
 import { Survey, SurveyResponse, SurveySchema } from "../types";
 import { generateSlug } from "@/lib/utils";
+import { deviceSessionService } from "@/services/session/deviceSessionService";
 
 // Local cache/fallback for immediate preview and offline testing
 let inMemorySurveys: Survey[] = [];
@@ -234,6 +235,7 @@ export const surveyService = {
         if (!error && surveys) {
           return surveys.map((s: any) => ({
             ...s,
+            creator_device_id: s.schema?.settings?.creatorDeviceId || s.creator_device_id || null,
             response_count: s.survey_responses?.[0]?.count || 0,
           }));
         }
@@ -242,6 +244,20 @@ export const surveyService = {
       }
     }
     return inMemorySurveys;
+  },
+
+  /**
+   * Returns only surveys created by or owned by the current device session.
+   * Survives device restarts and browser reboots.
+   */
+  async getMySurveys(): Promise<Survey[]> {
+    const all = await this.getAllSurveys();
+    if (typeof window === "undefined") return all;
+
+    return all.filter((s) => {
+      const creator = s.schema?.settings?.creatorDeviceId || s.creator_device_id;
+      return deviceSessionService.isOwner(s.id, creator);
+    });
   },
 
   async getSurveyById(idOrSlug: string): Promise<Survey | null> {
@@ -255,7 +271,11 @@ export const surveyService = {
           : await query.eq("slug", idOrSlug).single();
 
         if (!error && data) {
-          return data as Survey;
+          const s = data as Survey;
+          return {
+            ...s,
+            creator_device_id: s.schema?.settings?.creatorDeviceId || s.creator_device_id || null,
+          };
         }
       } catch (e) {
         console.warn("Supabase getSurveyById failed, falling back to local:", e);
@@ -276,17 +296,33 @@ export const surveyService = {
     signatory_signature_url?: string | null;
   }): Promise<Survey> {
     const slug = data.slug || generateSlug(data.title);
+    const currentDeviceId = typeof window !== "undefined" ? deviceSessionService.getDeviceId() : null;
+
+    // Attach current device token to schema settings for permanent session isolation
+    const schemaWithDevice: SurveySchema = {
+      ...data.schema,
+      settings: {
+        ...(data.schema.settings || {
+          requireAll: true,
+          allowAnonymous: true,
+          showProgressBar: true,
+        }),
+        creatorDeviceId: data.schema.settings?.creatorDeviceId || currentDeviceId || undefined,
+      },
+    };
+
     const newSurvey: Survey = {
       id: crypto.randomUUID ? crypto.randomUUID() : `srv_${Date.now()}`,
       slug,
       title: data.title,
       description: data.description || null,
       instructions: data.instructions || null,
-      schema: data.schema,
+      schema: schemaWithDevice,
       status: "published",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       response_count: 0,
+      creator_device_id: currentDeviceId,
       signatory_name: data.signatory_name || data.schema.settings?.signatoryName || null,
       signatory_title: data.signatory_title || data.schema.settings?.signatoryTitle || null,
       signatory_organization: data.signatory_organization || data.schema.settings?.signatoryOrganization || null,
@@ -314,6 +350,9 @@ export const surveyService = {
           .single();
 
         if (!error && inserted) {
+          if (inserted.id && typeof window !== "undefined") {
+            deviceSessionService.claimSurveyOwnership(inserted.id);
+          }
           inMemorySurveys.unshift(inserted as Survey);
           return inserted as Survey;
         }
@@ -322,6 +361,9 @@ export const surveyService = {
       }
     }
 
+    if (newSurvey.id && typeof window !== "undefined") {
+      deviceSessionService.claimSurveyOwnership(newSurvey.id);
+    }
     inMemorySurveys.unshift(newSurvey);
     return newSurvey;
   },
@@ -363,6 +405,9 @@ export const surveyService = {
   },
 
   async deleteSurvey(id: string): Promise<boolean> {
+    if (typeof window !== "undefined") {
+      deviceSessionService.removeSurveyOwnership(id);
+    }
     if (isSupabaseConfigured) {
       try {
         const supabase = createClient();
