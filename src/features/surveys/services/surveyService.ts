@@ -1,5 +1,5 @@
 import { createClient, isSupabaseConfigured } from "@/services/supabase/client";
-import { Survey, SurveyResponse, SurveySchema } from "../types";
+import { Survey, SurveyResponse, SurveySchema, SurveySettings } from "../types";
 import { generateSlug } from "@/lib/utils";
 import { deviceSessionService } from "@/services/session/deviceSessionService";
 

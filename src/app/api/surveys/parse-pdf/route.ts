@@ -23,18 +23,9 @@ export async function POST(req: NextRequest) {
 
     // Configure workerSrc to absolute file URL so Node.js loads it without relative chunk errors
     try {
-      let workerPath: string | null = null;
-      try {
-        workerPath = require.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
-      } catch {
-        const localPath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs");
-        if (fs.existsSync(localPath)) {
-          workerPath = localPath;
-        }
-      }
-
-      if (workerPath) {
-        pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).href;
+      const localPath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs");
+      if (fs.existsSync(localPath)) {
+        pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(localPath).href;
       }
     } catch (e) {
       console.warn("[PDF Worker Setup Warning]", e);
