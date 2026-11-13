@@ -222,6 +222,22 @@ function initializeSample() {
 
 initializeSample();
 
+function hydrateSurveyRecord(record: any): Survey {
+  const settings = record.schema?.settings || {};
+  return {
+    ...record,
+    signatories: settings.signatories || record.signatories || null,
+    capstone_logo_url: settings.capstoneLogoUrl || record.capstone_logo_url || null,
+    certificate_theme_color: settings.certificateThemeColor || record.certificate_theme_color || "gold",
+    secondary_signatory_name: settings.secondarySignatoryName || record.secondary_signatory_name || null,
+    secondary_signatory_title: settings.secondarySignatoryTitle || record.secondary_signatory_title || null,
+    secondary_signatory_organization: settings.secondarySignatoryOrganization || record.secondary_signatory_organization || null,
+    secondary_signatory_signature_url: settings.secondarySignatorySignatureUrl || record.secondary_signatory_signature_url || null,
+    creator_device_id: settings.creatorDeviceId || record.creator_device_id || null,
+    response_count: record.survey_responses?.[0]?.count ?? record.response_count ?? 0,
+  } as Survey;
+}
+
 export const surveyService = {
   async getAllSurveys(): Promise<Survey[]> {
     if (isSupabaseConfigured) {
@@ -233,11 +249,9 @@ export const surveyService = {
           .order("created_at", { ascending: false });
 
         if (!error && surveys) {
-          return surveys.map((s: any) => ({
-            ...s,
-            creator_device_id: s.schema?.settings?.creatorDeviceId || s.creator_device_id || null,
-            response_count: s.survey_responses?.[0]?.count || 0,
-          }));
+          const hydrated = surveys.map(hydrateSurveyRecord);
+          inMemorySurveys = hydrated;
+          return hydrated;
         }
       } catch (e) {
         console.warn("Supabase query failed, falling back to local storage:", e);
@@ -271,11 +285,11 @@ export const surveyService = {
           : await query.eq("slug", idOrSlug).single();
 
         if (!error && data) {
-          const s = data as Survey;
-          return {
-            ...s,
-            creator_device_id: s.schema?.settings?.creatorDeviceId || s.creator_device_id || null,
-          };
+          const hydrated = hydrateSurveyRecord(data);
+          const idx = inMemorySurveys.findIndex((s) => s.id === hydrated.id);
+          if (idx !== -1) inMemorySurveys[idx] = hydrated;
+          else inMemorySurveys.push(hydrated);
+          return hydrated;
         }
       } catch (e) {
         console.warn("Supabase getSurveyById failed, falling back to local:", e);
@@ -350,11 +364,12 @@ export const surveyService = {
           .single();
 
         if (!error && inserted) {
-          if (inserted.id && typeof window !== "undefined") {
-            deviceSessionService.claimSurveyOwnership(inserted.id);
+          const hydrated = hydrateSurveyRecord(inserted);
+          if (hydrated.id && typeof window !== "undefined") {
+            deviceSessionService.claimSurveyOwnership(hydrated.id);
           }
-          inMemorySurveys.unshift(inserted as Survey);
-          return inserted as Survey;
+          inMemorySurveys.unshift(hydrated);
+          return hydrated;
         }
       } catch (e) {
         console.warn("Supabase insert survey failed:", e);
@@ -369,39 +384,97 @@ export const surveyService = {
   },
 
   async updateSurvey(id: string, updates: Partial<Survey>): Promise<Survey | null> {
+    // 1. Locate current existing survey
+    const existing = inMemorySurveys.find((s) => s.id === id) || (await this.getSurveyById(id));
+
+    // 2. Prepare merged schema.settings
+    const currentSchema: SurveySchema = updates.schema || existing?.schema || {
+      sections: [],
+      questions: [],
+      settings: {
+        requireAll: true,
+        allowAnonymous: true,
+        showProgressBar: true,
+      },
+    };
+
+    const mergedSettings: SurveySettings = {
+      ...(currentSchema.settings || {}),
+      signatories: updates.signatories !== undefined ? (updates.signatories || undefined) : currentSchema.settings?.signatories,
+      signatoryName: updates.signatory_name !== undefined ? (updates.signatory_name || undefined) : currentSchema.settings?.signatoryName,
+      signatoryTitle: updates.signatory_title !== undefined ? (updates.signatory_title || undefined) : currentSchema.settings?.signatoryTitle,
+      signatoryOrganization: updates.signatory_organization !== undefined ? (updates.signatory_organization || undefined) : currentSchema.settings?.signatoryOrganization,
+      signatorySignatureUrl: updates.signatory_signature_url !== undefined ? (updates.signatory_signature_url || undefined) : currentSchema.settings?.signatorySignatureUrl,
+      secondarySignatoryName: updates.secondary_signatory_name !== undefined ? (updates.secondary_signatory_name || undefined) : currentSchema.settings?.secondarySignatoryName,
+      secondarySignatoryTitle: updates.secondary_signatory_title !== undefined ? (updates.secondary_signatory_title || undefined) : currentSchema.settings?.secondarySignatoryTitle,
+      secondarySignatoryOrganization: updates.secondary_signatory_organization !== undefined ? (updates.secondary_signatory_organization || undefined) : currentSchema.settings?.secondarySignatoryOrganization,
+      secondarySignatorySignatureUrl: updates.secondary_signatory_signature_url !== undefined ? (updates.secondary_signatory_signature_url || undefined) : currentSchema.settings?.secondarySignatorySignatureUrl,
+      capstoneLogoUrl: updates.capstone_logo_url !== undefined ? (updates.capstone_logo_url || undefined) : currentSchema.settings?.capstoneLogoUrl,
+      certificateThemeColor: updates.certificate_theme_color !== undefined ? (updates.certificate_theme_color || undefined) : currentSchema.settings?.certificateThemeColor,
+      creatorDeviceId: updates.creator_device_id !== undefined ? (updates.creator_device_id || undefined) : currentSchema.settings?.creatorDeviceId,
+    };
+
+    const finalSchema: SurveySchema = {
+      ...currentSchema,
+      settings: mergedSettings,
+    };
+
+    // 3. Strict dbPayload: only columns that exist in public.surveys table
+    const dbPayload: Record<string, any> = {
+      schema: finalSchema,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (updates.slug !== undefined) dbPayload.slug = updates.slug;
+    if (updates.title !== undefined) dbPayload.title = updates.title;
+    if (updates.description !== undefined) dbPayload.description = updates.description;
+    if (updates.instructions !== undefined) dbPayload.instructions = updates.instructions;
+    if (updates.status !== undefined) dbPayload.status = updates.status;
+    if (updates.signatory_name !== undefined) dbPayload.signatory_name = updates.signatory_name;
+    if (updates.signatory_title !== undefined) dbPayload.signatory_title = updates.signatory_title;
+    if (updates.signatory_organization !== undefined) dbPayload.signatory_organization = updates.signatory_organization;
+    if (updates.signatory_signature_url !== undefined) dbPayload.signatory_signature_url = updates.signatory_signature_url;
+
+    // 4. Update in Supabase
+    let savedSurvey: Survey | null = null;
     if (isSupabaseConfigured) {
       try {
         const supabase = createClient();
         const { data, error } = await supabase
           .from("surveys")
-          .update({
-            ...updates,
-            updated_at: new Date().toISOString(),
-          })
+          .update(dbPayload)
           .eq("id", id)
           .select()
           .single();
 
-        if (!error && data) {
-          const index = inMemorySurveys.findIndex((s) => s.id === id);
-          if (index !== -1) inMemorySurveys[index] = data as Survey;
-          return data as Survey;
+        if (error) {
+          console.error("[Supabase updateSurvey Error]:", error);
+          throw new Error(`Database error saving survey: ${error.message} (${error.code})`);
         }
-      } catch (e) {
-        console.warn("Supabase update survey failed:", e);
+
+        if (data) {
+          savedSurvey = hydrateSurveyRecord(data);
+        }
+      } catch (e: any) {
+        console.error("Supabase update survey failed:", e);
+        throw e;
       }
     }
 
+    const finalResult: Survey = savedSurvey || hydrateSurveyRecord({
+      ...(existing || {}),
+      ...updates,
+      schema: finalSchema,
+    });
+
     const index = inMemorySurveys.findIndex((s) => s.id === id);
     if (index !== -1) {
-      inMemorySurveys[index] = {
-        ...inMemorySurveys[index],
-        ...updates,
-        updated_at: new Date().toISOString(),
-      };
-      return inMemorySurveys[index];
+      inMemorySurveys[index] = finalResult;
+    } else {
+      inMemorySurveys.unshift(finalResult);
     }
-    return null;
+
+    return finalResult;
   },
 
   async deleteSurvey(id: string): Promise<boolean> {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,15 +46,45 @@ export function SurveyFormBuilder({ initialData, surveyId, onSaveSuccess, onCanc
   const [description, setDescription] = useState(initialData.description);
   const [instructions, setInstructions] = useState(initialData.instructions);
   const [schema, setSchema] = useState<SurveySchema>(initialData.schema);
-  const [signatory, setSignatory] = useState<SignatoryData>({
-    signatoryName: initialData.schema.settings?.signatoryName || "JARIB M. SIOCO",
-    signatoryTitle:
-      initialData.schema.settings?.signatoryTitle || "Lead Researcher & Platform Architect",
-    signatoryOrganization:
-      initialData.schema.settings?.signatoryOrganization || "HITOVIS Research Project",
-    signatorySignatureUrl: initialData.schema.settings?.signatorySignatureUrl || "",
+  const [signatory, setSignatory] = useState<SignatoryData>(() => {
+    const s = initialData.schema.settings || {};
+    return {
+      signatories: s.signatories,
+      signatoryName: s.signatoryName || "JARIB M. SIOCO",
+      signatoryTitle: s.signatoryTitle || "Lead Researcher & Platform Architect",
+      signatoryOrganization: s.signatoryOrganization || "HITOVIS Research Project",
+      signatorySignatureUrl: s.signatorySignatureUrl || "",
+      secondarySignatoryName: s.secondarySignatoryName,
+      secondarySignatoryTitle: s.secondarySignatoryTitle,
+      secondarySignatoryOrganization: s.secondarySignatoryOrganization,
+      secondarySignatorySignatureUrl: s.secondarySignatorySignatureUrl,
+      capstoneLogoUrl: s.capstoneLogoUrl,
+      certificateThemeColor: s.certificateThemeColor || "gold",
+    };
   });
   const [isSaving, setIsSaving] = useState(false);
+
+  // Sync state if initialData changes externally
+  useEffect(() => {
+    setTitle(initialData.title);
+    setDescription(initialData.description);
+    setInstructions(initialData.instructions);
+    setSchema(initialData.schema);
+    const s = initialData.schema.settings || {};
+    setSignatory({
+      signatories: s.signatories,
+      signatoryName: s.signatoryName || "JARIB M. SIOCO",
+      signatoryTitle: s.signatoryTitle || "Lead Researcher & Platform Architect",
+      signatoryOrganization: s.signatoryOrganization || "HITOVIS Research Project",
+      signatorySignatureUrl: s.signatorySignatureUrl || "",
+      secondarySignatoryName: s.secondarySignatoryName,
+      secondarySignatoryTitle: s.secondarySignatoryTitle,
+      secondarySignatoryOrganization: s.secondarySignatoryOrganization,
+      secondarySignatorySignatureUrl: s.secondarySignatorySignatureUrl,
+      capstoneLogoUrl: s.capstoneLogoUrl,
+      certificateThemeColor: s.certificateThemeColor || "gold",
+    });
+  }, [initialData]);
 
   // Global toggle: Make all required or all optional
   const handleToggleAllRequired = (required: boolean) => {
@@ -132,6 +162,50 @@ export function SurveyFormBuilder({ initialData, surveyId, onSaveSuccess, onCanc
     }));
   };
 
+  // Save signatory configuration specifically
+  const handleSaveSignatoryFromBuilder = async (data: SignatoryData) => {
+    setSignatory(data);
+    if (surveyId) {
+      try {
+        const updatedSchema: SurveySchema = {
+          ...schema,
+          settings: {
+            ...schema.settings,
+            signatories: data.signatories,
+            signatoryName: data.signatoryName,
+            signatoryTitle: data.signatoryTitle,
+            signatoryOrganization: data.signatoryOrganization,
+            signatorySignatureUrl: data.signatorySignatureUrl,
+            secondarySignatoryName: data.secondarySignatoryName,
+            secondarySignatoryTitle: data.secondarySignatoryTitle,
+            secondarySignatoryOrganization: data.secondarySignatoryOrganization,
+            secondarySignatorySignatureUrl: data.secondarySignatorySignatureUrl,
+            capstoneLogoUrl: data.capstoneLogoUrl,
+            certificateThemeColor: data.certificateThemeColor,
+          },
+        };
+
+        const updated = await surveyService.updateSurvey(surveyId, {
+          schema: updatedSchema,
+          signatory_name: data.signatoryName,
+          signatory_title: data.signatoryTitle,
+          signatory_organization: data.signatoryOrganization,
+          signatory_signature_url: data.signatorySignatureUrl,
+        });
+
+        if (onSaveSuccess && updated) {
+          onSaveSuccess(updated);
+        }
+        toast.success("Certificate & research signatories saved to database!");
+      } catch (err: any) {
+        console.error(err);
+        alert(err?.message || "Failed to save signatory configuration to database.");
+      }
+    } else {
+      toast.success("Signatory settings applied to this survey draft!");
+    }
+  };
+
   // Save survey to database
   const handleSaveSurvey = async () => {
     if (!title.trim()) {
@@ -145,10 +219,17 @@ export function SurveyFormBuilder({ initialData, surveyId, onSaveSuccess, onCanc
         ...schema,
         settings: {
           ...schema.settings,
+          signatories: signatory.signatories || schema.settings?.signatories,
           signatoryName: signatory.signatoryName,
           signatoryTitle: signatory.signatoryTitle,
           signatoryOrganization: signatory.signatoryOrganization,
           signatorySignatureUrl: signatory.signatorySignatureUrl,
+          secondarySignatoryName: signatory.secondarySignatoryName || schema.settings?.secondarySignatoryName,
+          secondarySignatoryTitle: signatory.secondarySignatoryTitle || schema.settings?.secondarySignatoryTitle,
+          secondarySignatoryOrganization: signatory.secondarySignatoryOrganization || schema.settings?.secondarySignatoryOrganization,
+          secondarySignatorySignatureUrl: signatory.secondarySignatorySignatureUrl || schema.settings?.secondarySignatorySignatureUrl,
+          capstoneLogoUrl: signatory.capstoneLogoUrl || schema.settings?.capstoneLogoUrl,
+          certificateThemeColor: signatory.certificateThemeColor || schema.settings?.certificateThemeColor,
         },
       };
 
@@ -311,10 +392,7 @@ export function SurveyFormBuilder({ initialData, surveyId, onSaveSuccess, onCanc
       {/* Official Signatory Configuration for Recognition Certificates */}
       <SignatorySettingsCard
         initialData={signatory}
-        onSave={(data) => {
-          setSignatory(data);
-          alert("Signatory and signature settings saved to this survey!");
-        }}
+        onSave={handleSaveSignatoryFromBuilder}
       />
 
       {/* Questions List */}

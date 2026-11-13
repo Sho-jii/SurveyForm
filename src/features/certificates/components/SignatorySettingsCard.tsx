@@ -165,6 +165,26 @@ export function SignatorySettingsCard({
     if (initialData?.capstoneLogoUrl) setCapstoneLogoUrl(initialData.capstoneLogoUrl);
     if (initialData?.signatories && initialData.signatories.length > 0) {
       setSignatories(initialData.signatories);
+    } else if (initialData?.signatoryName) {
+      const list: SurveySignatory[] = [
+        {
+          id: "sig-1",
+          name: initialData.signatoryName,
+          title: initialData.signatoryTitle || RECOGNIZED_BY_TITLE,
+          organization: initialData.signatoryOrganization || "Mindoro State University",
+          signatureUrl: initialData.signatorySignatureUrl || JARIB_SIGNATURE_BASE64,
+        },
+      ];
+      if (initialData.secondarySignatoryName) {
+        list.push({
+          id: "sig-2",
+          name: initialData.secondarySignatoryName,
+          title: initialData.secondarySignatoryTitle || "Co-Researcher & Project Lead",
+          organization: initialData.secondarySignatoryOrganization || "Mindoro State University",
+          signatureUrl: initialData.secondarySignatorySignatureUrl || "",
+        });
+      }
+      setSignatories(list);
     }
   }, [initialData]);
 
