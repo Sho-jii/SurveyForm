@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
 
 export function ThemeToggle({ className }: { className?: string }) {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">("light");
 
   useEffect(() => {
-    // Check initial theme from localStorage or document class
+    // Check initial theme from localStorage or document class; defaults to light mode
     const saved = localStorage.getItem("surveyform_theme") as "dark" | "light" | null;
-    const initialTheme = saved || (document.documentElement.classList.contains("light") ? "light" : "dark");
+    const initialTheme = saved ? saved : (document.documentElement.classList.contains("dark") ? "dark" : "light");
     setTheme(initialTheme);
     applyTheme(initialTheme);
   }, []);

@@ -433,26 +433,26 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
       <Card className="relative overflow-hidden bg-card/80 border-border shadow-xl rounded-none">
         <DecorIcon position="top-left" />
         <DecorIcon position="top-right" />
-        <CardHeader className="space-y-3 pb-6">
+        <CardHeader className="space-y-3.5 pb-6">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="border-primary/40 text-primary bg-primary/10 rounded-none font-mono text-[10px]">
+            <Badge variant="outline" className="border-primary/40 text-primary bg-primary/10 rounded-none font-mono text-xs font-semibold px-2 py-0.5">
               Survey Form
             </Badge>
-            <Badge variant="secondary" className="text-[10px] font-mono rounded-none">
+            <Badge variant="secondary" className="text-xs font-mono rounded-none px-2 py-0.5">
               ISO/IEC 25010 & UTAUT
             </Badge>
           </div>
-          <CardTitle className="text-2xl md:text-3xl font-bold font-heading tracking-tight text-foreground">
+          <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-bold font-heading tracking-tight text-foreground">
             {survey.title}
           </CardTitle>
           {survey.description && (
-            <CardDescription className="text-sm md:text-base text-muted-foreground leading-relaxed">
+            <CardDescription className="text-base sm:text-lg text-muted-foreground leading-relaxed">
               {survey.description}
             </CardDescription>
           )}
           {survey.instructions && (
-            <div className="p-3.5 rounded-none bg-secondary/50 border border-border/60 text-xs text-muted-foreground leading-relaxed font-mono">
-              <strong className="text-foreground block mb-1 uppercase tracking-wider">Instructions:</strong>
+            <div className="p-4 sm:p-5 rounded-none bg-secondary/50 border border-border/70 text-sm sm:text-base text-muted-foreground leading-relaxed font-mono">
+              <strong className="text-foreground block mb-1.5 uppercase tracking-wider text-sm sm:text-base font-bold">Instructions:</strong>
               {survey.instructions}
             </div>
           )}
@@ -461,12 +461,12 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
 
       {/* Validation Alert */}
       {validationErrors.length > 0 && (
-        <Card className="border-destructive/50 bg-destructive/10 text-destructive p-4 rounded-none">
+        <Card className="border-destructive/50 bg-destructive/10 text-destructive p-4 sm:p-5 rounded-none">
           <div className="flex items-start gap-3">
             <ShieldCheck className="w-5 h-5 mt-0.5 shrink-0" />
             <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase font-mono tracking-wider">Please complete required fields:</p>
-              <ul className="text-xs list-disc pl-4 space-y-0.5">
+              <p className="text-sm font-bold uppercase font-mono tracking-wider">Please complete required fields:</p>
+              <ul className="text-sm list-disc pl-4 space-y-0.5">
                 {validationErrors.map((err, i) => (
                   <li key={i}>{err}</li>
                 ))}
@@ -477,7 +477,7 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
       )}
 
       {/* Questions List */}
-      <div className="space-y-5">
+      <div className="space-y-6">
         {survey.schema.questions.map((question, qIdx) => {
           // 1. Likert Matrix Question
           if (question.type === "likert_matrix" && question.matrixRows) {
@@ -487,29 +487,29 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
             return (
               <Card key={question.id} className="relative bg-card/70 border-border rounded-none shadow-sm">
                 <DecorIcon position="top-right" className="opacity-40" />
-                <CardHeader className="pb-3 border-b border-border/40">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-semibold text-primary uppercase">
+                <CardHeader className="pb-3.5 border-b border-border/40">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wider">
                       Section {qIdx + 1}
                     </span>
                     {question.required ? (
-                      <Badge variant="outline" className="text-[9px] border-primary/40 text-primary rounded-none font-mono">
+                      <Badge variant="outline" className="text-[11px] sm:text-xs border-primary/50 text-primary bg-primary/10 rounded-none font-mono font-bold px-2 py-0.5">
                         REQUIRED
                       </Badge>
                     ) : (
-                      <span className="text-xs font-mono text-muted-foreground">OPTIONAL</span>
+                      <span className="text-xs sm:text-sm font-mono text-muted-foreground">OPTIONAL</span>
                     )}
                   </div>
-                  <CardTitle className="text-sm md:text-base font-semibold font-heading text-foreground">
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold font-heading text-foreground tracking-tight pt-1">
                     {question.title}
                   </CardTitle>
                   {question.description && (
-                    <CardDescription className="text-xs text-muted-foreground">
+                    <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-0.5">
                       {question.description}
                     </CardDescription>
                   )}
                 </CardHeader>
-                <CardContent className="p-4 space-y-5">
+                <CardContent className="p-4 sm:p-5 space-y-5">
                   {question.matrixRows.map((row) => {
                     const selectedVal = answers[row.id];
 
@@ -517,30 +517,30 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                       <div
                         key={row.id}
                         className={cn(
-                          "p-3 rounded-none border transition-all space-y-3",
+                          "p-3.5 sm:p-4 rounded-none border transition-all space-y-3.5",
                           selectedVal !== undefined
-                            ? "border-border/80 bg-background/60"
+                            ? "border-border/80 bg-background/60 shadow-xs"
                             : "border-border/40 bg-background/20"
                         )}
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1.5">
                           <div className="flex-1">
                             {row.code && (
-                              <span className="font-mono text-xs font-bold text-primary mr-1.5">
+                              <span className="font-mono text-sm sm:text-base font-bold text-primary mr-2">
                                 [{row.code}]
                               </span>
                             )}
-                            <span className="text-xs md:text-sm font-medium text-foreground">
+                            <span className="text-sm sm:text-base md:text-lg font-semibold text-foreground">
                               {row.label}
                             </span>
                             {row.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                              <p className="text-sm sm:text-base text-muted-foreground mt-1 leading-relaxed">
                                 {row.description}
                               </p>
                             )}
                           </div>
                           {selectedVal !== undefined && (
-                            <span className="text-[11px] font-mono text-emerald-400 shrink-0 font-medium">
+                            <span className="text-xs sm:text-sm font-mono text-emerald-600 dark:text-emerald-400 shrink-0 font-bold bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/30">
                               Selected: {selectedVal} ({scaleObj[selectedVal] || defaultScaleLabels[selectedVal]})
                             </span>
                           )}
@@ -558,16 +558,16 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                                 type="button"
                                 onClick={() => handleLikertAnswer(row.id, val)}
                                 className={cn(
-                                  "p-2 rounded-none border text-center transition-all cursor-pointer flex sm:flex-col items-center justify-between sm:justify-center gap-1 min-h-[52px]",
+                                  "p-2.5 sm:p-3 rounded-none border text-center transition-all cursor-pointer flex sm:flex-col items-center justify-between sm:justify-center gap-1.5 min-h-[58px] sm:min-h-[64px]",
                                   isSelected
                                     ? "bg-primary text-primary-foreground border-primary font-bold shadow-md"
                                     : "bg-secondary/40 hover:bg-secondary border-border/80 text-muted-foreground hover:text-foreground hover:border-foreground/30"
                                 )}
                               >
-                                <span className="font-mono text-sm md:text-base font-bold leading-none">
+                                <span className="font-mono text-base sm:text-lg md:text-xl font-black leading-none">
                                   {val}
                                 </span>
-                                <span className="text-[10px] md:text-[11px] font-mono uppercase tracking-tight text-right sm:text-center leading-tight">
+                                <span className="text-xs sm:text-xs font-mono font-semibold uppercase tracking-tight text-right sm:text-center leading-tight">
                                   {labelName}
                                 </span>
                               </button>
@@ -587,46 +587,46 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
             return (
               <Card key={question.id} className="relative bg-card/70 border-border rounded-none shadow-sm">
                 <DecorIcon position="top-right" className="opacity-30" />
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-semibold text-primary uppercase">
+                <CardHeader className="pb-3.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wider">
                       Question {qIdx + 1}
                     </span>
                     {question.required ? (
-                      <Badge variant="outline" className="text-[9px] border-primary/40 text-primary rounded-none font-mono">
+                      <Badge variant="outline" className="text-[11px] sm:text-xs border-primary/50 text-primary bg-primary/10 rounded-none font-mono font-bold px-2 py-0.5">
                         REQUIRED
                       </Badge>
                     ) : (
-                      <span className="text-xs font-mono text-muted-foreground">OPTIONAL</span>
+                      <span className="text-xs sm:text-sm font-mono text-muted-foreground">OPTIONAL</span>
                     )}
                   </div>
-                  <CardTitle className="text-sm md:text-base font-semibold font-heading text-foreground">
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold font-heading text-foreground tracking-tight pt-1">
                     {question.title}
                   </CardTitle>
                   {question.description && (
-                    <CardDescription className="text-xs text-muted-foreground">
+                    <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-0.5">
                       {question.description}
                     </CardDescription>
                   )}
                 </CardHeader>
-                <CardContent className="p-4 pt-0">
+                <CardContent className="p-4 sm:p-5 pt-0">
                   <RadioGroup
                     value={answers[question.id] || ""}
                     onValueChange={(val) => handleTextAnswer(question.id, val)}
-                    className="grid sm:grid-cols-2 gap-2.5"
+                    className="grid sm:grid-cols-2 gap-3"
                   >
                     {question.options.map((opt) => (
                       <label
                         key={opt}
                         className={cn(
-                          "flex items-center gap-3 p-3 rounded-none border cursor-pointer transition-all",
+                          "flex items-center gap-3.5 p-3.5 sm:p-4 rounded-none border cursor-pointer transition-all",
                           answers[question.id] === opt
-                            ? "bg-primary/10 border-primary text-foreground font-medium"
-                            : "bg-background/40 border-border/60 text-muted-foreground hover:bg-secondary/40"
+                            ? "bg-primary/10 border-primary text-foreground font-semibold shadow-xs"
+                            : "bg-background/40 border-border/70 text-muted-foreground hover:text-foreground hover:bg-secondary/40"
                         )}
                       >
-                        <RadioGroupItem value={opt} id={`${question.id}-${opt}`} />
-                        <span className="text-xs md:text-sm">{opt}</span>
+                        <RadioGroupItem value={opt} id={`${question.id}-${opt}`} className="size-5 shrink-0" />
+                        <span className="text-sm sm:text-base font-medium">{opt}</span>
                       </label>
                     ))}
                   </RadioGroup>
@@ -641,31 +641,31 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
             return (
               <Card key={question.id} className="relative bg-card/70 border-border rounded-none shadow-sm">
                 <DecorIcon position="top-right" className="opacity-30" />
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-semibold text-primary uppercase">
+                <CardHeader className="pb-3.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wider">
                       {isName ? "Respondent Information" : `Question ${qIdx + 1}`}
                     </span>
                     {question.required ? (
-                      <Badge variant="outline" className="text-[9px] border-primary/40 text-primary rounded-none font-mono">
+                      <Badge variant="outline" className="text-[11px] sm:text-xs border-primary/50 text-primary bg-primary/10 rounded-none font-mono font-bold px-2 py-0.5">
                         REQUIRED
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className="text-[9px] text-muted-foreground rounded-none font-mono">
+                      <Badge variant="secondary" className="text-[11px] sm:text-xs text-muted-foreground rounded-none font-mono px-2 py-0.5">
                         OPTIONAL
                       </Badge>
                     )}
                   </div>
-                  <CardTitle className="text-sm md:text-base font-semibold font-heading text-foreground">
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold font-heading text-foreground tracking-tight pt-1">
                     {question.title}
                   </CardTitle>
                   {question.description && (
-                    <CardDescription className="text-xs text-muted-foreground">
+                    <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-0.5">
                       {question.description}
                     </CardDescription>
                   )}
                 </CardHeader>
-                <CardContent className="p-4 pt-0">
+                <CardContent className="p-4 sm:p-5 pt-0">
                   <Input
                     value={
                       isName
@@ -685,7 +685,7 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                       }
                     }}
                     placeholder={question.placeholder || "Enter your response..."}
-                    className="bg-background/60 rounded-none"
+                    className="bg-background/60 rounded-none text-sm sm:text-base h-12 px-3.5"
                   />
                 </CardContent>
               </Card>
@@ -697,35 +697,35 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
             return (
               <Card key={question.id} className="relative bg-card/70 border-border rounded-none shadow-sm">
                 <DecorIcon position="top-right" className="opacity-30" />
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-semibold text-primary uppercase">
+                <CardHeader className="pb-3.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wider">
                       Feedback & Remarks
                     </span>
                     {question.required ? (
-                      <Badge variant="outline" className="text-[9px] border-primary/40 text-primary rounded-none font-mono">
+                      <Badge variant="outline" className="text-[11px] sm:text-xs border-primary/50 text-primary bg-primary/10 rounded-none font-mono font-bold px-2 py-0.5">
                         REQUIRED
                       </Badge>
                     ) : (
-                      <span className="text-xs font-mono text-muted-foreground">OPTIONAL</span>
+                      <span className="text-xs sm:text-sm font-mono text-muted-foreground">OPTIONAL</span>
                     )}
                   </div>
-                  <CardTitle className="text-sm md:text-base font-semibold font-heading text-foreground">
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold font-heading text-foreground tracking-tight pt-1">
                     {question.title}
                   </CardTitle>
                   {question.description && (
-                    <CardDescription className="text-xs text-muted-foreground">
+                    <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-0.5">
                       {question.description}
                     </CardDescription>
                   )}
                 </CardHeader>
-                <CardContent className="p-4 pt-0">
+                <CardContent className="p-4 sm:p-5 pt-0">
                   <Textarea
                     value={answers[question.id] || ""}
                     onChange={(e) => handleTextAnswer(question.id, e.target.value)}
                     rows={4}
                     placeholder={question.placeholder || "Write your feedback here..."}
-                    className="bg-background/60 rounded-none"
+                    className="bg-background/60 rounded-none text-sm sm:text-base p-3.5 leading-relaxed"
                   />
                 </CardContent>
               </Card>
@@ -737,37 +737,38 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
             return (
               <Card key={question.id} className="relative bg-card/70 border-border rounded-none shadow-sm">
                 <DecorIcon position="top-right" className="opacity-30" />
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-semibold text-primary uppercase">
+                <CardHeader className="pb-3.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                      <PenTool className="size-4" />
                       Participant Confirmation
                     </span>
                     {question.required ? (
-                      <Badge variant="outline" className="text-[9px] border-primary/40 text-primary rounded-none font-mono">
+                      <Badge variant="outline" className="text-[11px] sm:text-xs border-primary/50 text-primary bg-primary/10 rounded-none font-mono font-bold px-2 py-0.5">
                         REQUIRED
                       </Badge>
                     ) : (
-                      <span className="text-xs font-mono text-muted-foreground">OPTIONAL</span>
+                      <span className="text-xs sm:text-sm font-mono text-muted-foreground">OPTIONAL</span>
                     )}
                   </div>
-                  <CardTitle className="text-sm md:text-base font-semibold font-heading text-foreground">
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold font-heading text-foreground tracking-tight pt-1">
                     {question.title}
                   </CardTitle>
                   {question.description && (
-                    <CardDescription className="text-xs text-muted-foreground">
+                    <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-0.5">
                       {question.description}
                     </CardDescription>
                   )}
                 </CardHeader>
-                <CardContent className="p-4 pt-0 space-y-4">
+                <CardContent className="p-4 sm:p-5 pt-0 space-y-4">
                   {/* Name Input for Certificate */}
-                  <div className="space-y-1.5 p-3.5 bg-background/50 border border-border/70">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-mono font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                        <User className="size-3.5 text-primary" />
+                  <div className="space-y-2 p-4 bg-background/50 border border-border/70">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                      <label className="text-xs sm:text-sm font-mono font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <User className="size-4 text-primary" />
                         Full Name (to appear on Certificate of Recognition)
                       </label>
-                      <Badge variant="outline" className="text-[9px] border-primary/40 text-primary bg-primary/10 rounded-none font-mono">
+                      <Badge variant="outline" className="text-[10px] sm:text-[11px] border-primary/40 text-primary bg-primary/10 rounded-none font-mono font-semibold w-fit">
                         REQUIRED FOR CERTIFICATE
                       </Badge>
                     </div>
@@ -783,17 +784,17 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                         }));
                       }}
                       placeholder="e.g. Engr. Jarib M. Sioco / Dr. Juan Dela Cruz"
-                      className="bg-card rounded-none border-border focus:border-primary font-sans text-sm h-10"
+                      className="bg-card rounded-none border-border focus:border-primary font-sans text-sm sm:text-base h-12 px-3.5"
                     />
-                    <p className="text-[11px] text-muted-foreground font-sans">
+                    <p className="text-xs sm:text-sm text-muted-foreground font-sans">
                       This name will be formally inscribed on your verified Certificate of Recognition and verified via QR code.
                     </p>
                   </div>
 
                   {/* Optional Designation / Affiliation */}
-                  <div className="space-y-1.5 p-3.5 bg-background/50 border border-border/70">
-                    <label className="text-xs font-mono font-medium text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                      <Briefcase className="size-3.5 text-muted-foreground" />
+                  <div className="space-y-2 p-4 bg-background/50 border border-border/70">
+                    <label className="text-xs sm:text-sm font-mono font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <Briefcase className="size-4 text-muted-foreground" />
                       Designation / Stakeholder Group (Optional)
                     </label>
                     <Input
@@ -807,18 +808,18 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                         }));
                       }}
                       placeholder="e.g. Evaluator / IT Expert / Faculty / Fisherman Stakeholder"
-                      className="bg-card rounded-none border-border focus:border-primary font-sans text-sm h-10"
+                      className="bg-card rounded-none border-border focus:border-primary font-sans text-sm sm:text-base h-12 px-3.5"
                     />
                   </div>
 
                   {/* Signature Canvas */}
                   <div className="space-y-2 pt-2 border-t border-border/40">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                        <PenTool className="size-3.5 text-primary" />
+                      <span className="text-xs sm:text-sm font-mono font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        <PenTool className="size-4 text-primary" />
                         Interactive Digital Signature
                       </span>
-                      <span className="text-[10px] font-mono text-muted-foreground">
+                      <span className="text-xs font-mono text-muted-foreground">
                         USE MOUSE OR TOUCH TO DRAW
                       </span>
                     </div>
@@ -843,30 +844,30 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
         {!hasSchemaSignature && (
           <Card className="relative bg-card/70 border-border rounded-none shadow-sm">
             <DecorIcon position="top-right" className="opacity-30" />
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-mono font-semibold text-primary uppercase flex items-center gap-1.5">
-                  <PenTool className="size-3.5" />
+            <CardHeader className="pb-3.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs sm:text-sm font-mono font-bold text-primary uppercase flex items-center gap-1.5">
+                  <PenTool className="size-4" />
                   Participant Digital Signature & Certificate
                 </span>
-                <span className="text-xs font-mono text-muted-foreground">OPTIONAL</span>
+                <span className="text-xs sm:text-sm font-mono text-muted-foreground">OPTIONAL</span>
               </div>
-              <CardTitle className="text-sm md:text-base font-semibold font-heading text-foreground">
+              <CardTitle className="text-base sm:text-lg md:text-xl font-bold font-heading text-foreground tracking-tight pt-1">
                 Participant Confirmation / Signature
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
+              <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-0.5">
                 Your full name and signature will be included on your downloadable Certificate of Recognition.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 pt-0 space-y-4">
+            <CardContent className="p-4 sm:p-5 pt-0 space-y-4">
               {/* Name Input for Certificate */}
-              <div className="space-y-1.5 p-3.5 bg-background/50 border border-border/70">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-mono font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                    <User className="size-3.5 text-primary" />
+              <div className="space-y-2 p-4 bg-background/50 border border-border/70">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                  <label className="text-xs sm:text-sm font-mono font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <User className="size-4 text-primary" />
                     Full Name (to appear on Certificate of Recognition)
                   </label>
-                  <Badge variant="outline" className="text-[9px] border-primary/40 text-primary bg-primary/10 rounded-none font-mono">
+                  <Badge variant="outline" className="text-[10px] sm:text-[11px] border-primary/40 text-primary bg-primary/10 rounded-none font-mono font-semibold w-fit">
                     REQUIRED FOR CERTIFICATE
                   </Badge>
                 </div>
@@ -882,17 +883,17 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                     }));
                   }}
                   placeholder="e.g. Engr. Jarib M. Sioco / Dr. Juan Dela Cruz"
-                  className="bg-card rounded-none border-border focus:border-primary font-sans text-sm h-10"
+                  className="bg-card rounded-none border-border focus:border-primary font-sans text-sm sm:text-base h-12 px-3.5"
                 />
-                <p className="text-[11px] text-muted-foreground font-sans">
+                <p className="text-xs sm:text-sm text-muted-foreground font-sans">
                   This name will be formally inscribed on your verified Certificate of Recognition and verified via QR code.
                 </p>
               </div>
 
               {/* Optional Designation / Affiliation */}
-              <div className="space-y-1.5 p-3.5 bg-background/50 border border-border/70">
-                <label className="text-xs font-mono font-medium text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <Briefcase className="size-3.5 text-muted-foreground" />
+              <div className="space-y-2 p-4 bg-background/50 border border-border/70">
+                <label className="text-xs sm:text-sm font-mono font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Briefcase className="size-4 text-muted-foreground" />
                   Designation / Stakeholder Group (Optional)
                 </label>
                 <Input
@@ -906,18 +907,18 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                     }));
                   }}
                   placeholder="e.g. Evaluator / IT Expert / Faculty / Fisherman Stakeholder"
-                  className="bg-card rounded-none border-border focus:border-primary font-sans text-sm h-10"
+                  className="bg-card rounded-none border-border focus:border-primary font-sans text-sm sm:text-base h-12 px-3.5"
                 />
               </div>
 
               {/* Signature Canvas */}
               <div className="space-y-2 pt-2 border-t border-border/40">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-                    <PenTool className="size-3.5 text-primary" />
+                  <span className="text-xs sm:text-sm font-mono font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    <PenTool className="size-4 text-primary" />
                     Interactive Digital Signature
                   </span>
-                  <span className="text-[10px] font-mono text-muted-foreground">
+                  <span className="text-xs font-mono text-muted-foreground">
                     USE MOUSE OR TOUCH TO DRAW
                   </span>
                 </div>
@@ -932,12 +933,12 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
       </div>
 
       {/* Submit / Update Button */}
-      <div className="p-5 rounded-none bg-card/85 border border-border shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="p-5 sm:p-6 rounded-none bg-card/85 border border-border shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
-          <h4 className="text-sm font-semibold text-foreground font-heading uppercase tracking-wide">
+          <h4 className="text-base sm:text-lg font-bold text-foreground font-heading uppercase tracking-wide">
             {isEditMode ? "Save & Update Evaluation" : "Submit Evaluation"}
           </h4>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground pt-0.5">
             {isEditMode
               ? "All modifications to scores, comments, or demographic data will directly update the official response."
               : "A verified Certificate of Recognition with live QR verification will be issued immediately upon submission."}
@@ -947,7 +948,7 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
           type="submit"
           size="lg"
           disabled={isSubmitting}
-          className="w-full sm:w-auto rounded-none gap-2 text-xs md:text-sm font-semibold uppercase tracking-wider px-8 font-mono bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/90"
+          className="w-full sm:w-auto rounded-none gap-2 text-sm sm:text-base font-bold uppercase tracking-wider px-8 font-mono bg-primary text-primary-foreground shadow-md hover:bg-primary/90 h-12"
         >
           {isEditMode ? <Save className="w-4 h-4" /> : <Send className="w-4 h-4" />}
           <span>

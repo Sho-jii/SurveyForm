@@ -37,12 +37,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SurveyForm" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <script
@@ -50,11 +50,12 @@ export default function RootLayout({
             __html: `
               try {
                 const theme = localStorage.getItem('surveyform_theme');
-                if (theme === 'light') {
+                if (theme === 'dark') {
+                  document.documentElement.classList.remove('light');
+                  document.documentElement.classList.add('dark');
+                } else {
                   document.documentElement.classList.remove('dark');
                   document.documentElement.classList.add('light');
-                } else {
-                  document.documentElement.classList.add('dark');
                 }
               } catch (e) {}
             `,
@@ -64,7 +65,7 @@ export default function RootLayout({
       <body className="overscroll-none bg-background font-sans text-foreground antialiased style-nova base-color-neutral min-h-screen">
         {children}
         <PwaInstallPrompt />
-        <Toaster position="top-right" richColors theme="dark" />
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );
