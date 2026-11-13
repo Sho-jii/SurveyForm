@@ -137,9 +137,9 @@ export default function CertificateVerificationPage() {
               </p>
             </div>
 
-            {/* Professional Certificate of Appreciation (Horizontal scroll container for mobile) */}
-            <div className="overflow-x-auto w-full pb-2">
-              <div className="min-w-[680px] sm:min-w-full">
+            {/* Professional Certificate of Appreciation (Fixed landscape box) */}
+            <div className="overflow-x-auto w-full pb-4 flex justify-start lg:justify-center">
+              <div className="w-[840px] shrink-0">
                 <CertificateCard
                   recipientName={cert.recipient_name}
                   recipientRole={cert.recipient_role}

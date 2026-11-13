@@ -108,13 +108,13 @@ export function CertificateCard({
   // Dynamic grid columns for signatories
   const sigCount = activeSignatories.length;
   let gridColsClass = "grid-cols-1";
-  if (sigCount === 2) gridColsClass = "grid-cols-1 sm:grid-cols-2";
-  else if (sigCount === 3) gridColsClass = "grid-cols-1 sm:grid-cols-3";
-  else if (sigCount >= 4) gridColsClass = "grid-cols-2 sm:grid-cols-4";
+  if (sigCount === 2) gridColsClass = "grid-cols-2";
+  else if (sigCount === 3) gridColsClass = "grid-cols-3";
+  else if (sigCount >= 4) gridColsClass = "grid-cols-4";
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Outer Certificate Frame: Clean, Classic, Dignified */}
+      {/* Outer Certificate Frame: Fixed landscape box (aspect 1.414 / 1) */}
       <div
         style={
           {
@@ -124,166 +124,167 @@ export function CertificateCard({
             "--cert-text-accent": theme.textAccent,
           } as React.CSSProperties
         }
-        className="relative bg-white text-zinc-900 rounded-none p-4 sm:p-8 md:p-12 shadow-2xl border-2 border-zinc-800 transition-all duration-300 select-none overflow-hidden"
+        className="relative bg-white text-zinc-900 rounded-none p-5 sm:p-7 shadow-2xl border-2 border-zinc-800 transition-all duration-300 select-none overflow-hidden w-full max-w-[840px] aspect-[1.414/1] mx-auto flex flex-col justify-between"
       >
         {/* Double Elegant Border */}
-        <div className="border-4 border-zinc-900 p-4 sm:p-6 md:p-8 relative">
+        <div className="border-4 border-zinc-900 p-4 sm:p-5 relative h-full flex flex-col justify-between">
           {/* Inner Accent Hairline */}
           <div
             style={{ borderColor: theme.primary }}
-            className="border-2 border-dashed p-4 sm:p-6 md:p-8 flex flex-col justify-between space-y-8 min-h-[580px] bg-gradient-to-b from-white via-zinc-50/50 to-white"
+            className="border-2 border-dashed p-4 sm:p-5 flex flex-col justify-between h-full bg-gradient-to-b from-white via-zinc-50/50 to-white"
           >
             {/* Top Header: Logo + Institution Header + Certificate Title */}
-            <div className="text-center space-y-3">
+            <div className="text-center space-y-1.5">
               {/* Capstone Logo */}
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-2">
                 {capstoneLogoUrl ? (
                   <img
                     src={capstoneLogoUrl}
                     alt="Capstone Logo"
-                    className="h-12 sm:h-16 w-auto max-w-[180px] object-contain"
+                    className="h-10 sm:h-12 w-auto max-w-[140px] object-contain"
                   />
                 ) : (
                   <div
                     style={{ borderColor: theme.primary, color: theme.primary }}
-                    className="size-12 rounded-full border-2 flex items-center justify-center bg-zinc-50"
+                    className="size-10 rounded-full border-2 flex items-center justify-center bg-zinc-50"
                   >
-                    <Award className="size-6" />
+                    <Award className="size-5" />
                   </div>
                 )}
               </div>
 
               {/* Institution / Project Name */}
               <div className="space-y-0.5">
-                <span className="text-[11px] sm:text-xs font-mono font-bold uppercase tracking-[0.25em] text-zinc-600 block">
+                <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-[0.25em] text-zinc-600 block">
                   {capstoneOrgName || "HITOVIS RESEARCH & EVALUATION PLATFORM"}
                 </span>
-                <span className="text-[10px] font-mono text-zinc-400 block tracking-widest uppercase">
+                <span className="text-[9px] font-mono text-zinc-400 block tracking-widest uppercase">
                   ACADEMIC RESEARCH · ISO/IEC 25010 & UTAUT FRAMEWORK
                 </span>
               </div>
 
               {/* Main Certificate Title */}
-              <div className="pt-2">
+              <div className="pt-1">
                 <h1
                   style={{ color: theme.primary }}
-                  className="text-2xl sm:text-4xl md:text-5xl font-serif font-black tracking-wider uppercase leading-none drop-shadow-sm"
+                  className="text-xl sm:text-3xl md:text-4xl font-serif font-black tracking-wider uppercase leading-none drop-shadow-sm"
                 >
                   Certificate of Appreciation
                 </h1>
-                <div className="flex items-center justify-center gap-2 mt-3">
-                  <div className="h-0.5 w-16 sm:w-28 bg-zinc-800" />
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <div className="h-0.5 w-14 sm:w-24 bg-zinc-800" />
                   <span
                     style={{ backgroundColor: theme.primary }}
-                    className="size-2 rotate-45 inline-block"
+                    className="size-1.5 rotate-45 inline-block"
                   />
-                  <div className="h-0.5 w-16 sm:w-28 bg-zinc-800" />
+                  <div className="h-0.5 w-14 sm:w-24 bg-zinc-800" />
                 </div>
               </div>
             </div>
 
             {/* Recipient Section */}
-            <div className="text-center space-y-2 py-2">
-              <span className="text-xs sm:text-sm font-sans uppercase tracking-[0.2em] text-zinc-500 font-semibold block">
+            <div className="text-center space-y-1 py-1">
+              <span className="text-[10px] sm:text-xs font-sans uppercase tracking-[0.2em] text-zinc-500 font-semibold block">
                 THIS CERTIFICATE IS PROUDLY PRESENTED TO
               </span>
 
-              <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-bold text-zinc-950 tracking-tight pt-1 pb-2 break-words">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold text-zinc-950 tracking-tight py-0.5 break-words">
                 {displayRecipient}
               </h2>
 
               {recipientRole && (
-                <div className="inline-block px-3 py-1 font-mono text-xs font-bold uppercase tracking-wider border border-zinc-300 bg-zinc-100 text-zinc-800">
+                <div className="inline-block px-2.5 py-0.5 font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider border border-zinc-300 bg-zinc-100 text-zinc-800">
                   Evaluator Role: {recipientRole}
                 </div>
               )}
             </div>
 
             {/* Body Citation */}
-            <div className="max-w-2xl mx-auto text-center space-y-2.5 text-zinc-700">
-              <p className="text-xs sm:text-sm leading-relaxed font-sans">
+            <div className="max-w-xl mx-auto text-center space-y-1.5 text-zinc-700">
+              <p className="text-[11px] sm:text-xs leading-relaxed font-sans">
                 in grateful recognition and appreciation for actively completing the comprehensive survey
                 evaluation and contributing rigorous expert assessment for the research capstone project:
               </p>
-              <p className="text-sm sm:text-base md:text-lg font-bold font-serif text-zinc-950 border-y border-zinc-200 py-2 px-4 bg-zinc-50/60">
+              <p className="text-xs sm:text-sm md:text-base font-bold font-serif text-zinc-950 border-y border-zinc-200 py-1 px-3 bg-zinc-50/70">
                 &ldquo;{surveyTitle || "Evaluation Questionnaire"}&rdquo;
               </p>
-              <p className="text-[10px] sm:text-[11px] text-zinc-500 font-mono tracking-wide">
+              <p className="text-[9px] sm:text-[10px] text-zinc-500 font-mono tracking-wide">
                 Evaluated in accordance with ISO/IEC 25010:2011 Software Quality Requirements and UTAUT Technology Acceptance Criteria.
               </p>
             </div>
 
-            {/* Verification Bar: Current Date & Live QR Seal */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-4 bg-zinc-50 border border-zinc-200">
-              <div className="flex items-center gap-3">
-                {qrDataUrl ? (
-                  <img
-                    src={qrDataUrl}
-                    alt="Verification QR"
-                    className="size-14 sm:size-16 object-contain border border-zinc-300 p-1 bg-white"
-                  />
-                ) : (
-                  <div className="size-14 border border-dashed border-zinc-300 flex items-center justify-center bg-white">
-                    <QrCode className="size-6 text-zinc-400" />
+            {/* Verification Bar & Dynamic Signatories (Anchored at the bottom) */}
+            <div className="space-y-2 pt-2 border-t border-zinc-200 mt-auto">
+              {/* Compact Verification Strip */}
+              <div className="flex items-center justify-between gap-3 py-1.5 px-3 bg-zinc-50/90 border border-zinc-200 text-xs">
+                <div className="flex items-center gap-2">
+                  {qrDataUrl ? (
+                    <img
+                      src={qrDataUrl}
+                      alt="Verification QR"
+                      className="size-10 sm:size-11 object-contain border border-zinc-300 p-0.5 bg-white shrink-0"
+                    />
+                  ) : (
+                    <div className="size-10 border border-dashed border-zinc-300 flex items-center justify-center bg-white shrink-0">
+                      <QrCode className="size-5 text-zinc-400" />
+                    </div>
+                  )}
+                  <div className="text-left space-y-0.5">
+                    <span className="text-[8px] font-mono uppercase tracking-widest text-zinc-500 font-bold block">
+                      AUTHENTIC RESEARCH CREDENTIAL
+                    </span>
+                    <span className="text-[11px] font-mono font-bold text-zinc-950 block">
+                      {certificateCode}
+                    </span>
+                    <span className="text-[8px] font-mono text-zinc-500 block">
+                      Scan QR code or visit <span className="underline">/verify/{certificateCode}</span>
+                    </span>
                   </div>
-                )}
-                <div className="text-left space-y-0.5">
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 font-bold block">
-                    AUTHENTIC RESEARCH CREDENTIAL
+                </div>
+
+                <div className="text-right font-mono">
+                  <span className="text-[9px] uppercase tracking-wider text-zinc-500 block font-semibold">
+                    DATE OF ISSUANCE
                   </span>
-                  <span className="text-xs font-mono font-bold text-zinc-950 block">
-                    {certificateCode}
+                  <span className="text-xs sm:text-sm font-bold text-zinc-950 block">
+                    {currentDateStr}
                   </span>
-                  <span className="text-[10px] font-mono text-zinc-500 block">
-                    Scan QR code or visit <span className="underline">/verify/{certificateCode}</span>
+                  <span className="text-[8px] text-zinc-400 block">
+                    Academic Year {currentYear}
                   </span>
                 </div>
               </div>
 
-              <div className="text-center sm:text-right font-mono">
-                <span className="text-[10px] uppercase tracking-wider text-zinc-500 block font-semibold">
-                  DATE OF ISSUANCE
-                </span>
-                <span className="text-sm font-bold text-zinc-950 block">
-                  {currentDateStr}
-                </span>
-                <span className="text-[10px] text-zinc-400 block">
-                  Academic Year {currentYear}
-                </span>
-              </div>
-            </div>
-
-            {/* Bottom Row: Dynamic Signatories (1, 2, 3, or more researchers) */}
-            <div className="pt-4 border-t border-zinc-300">
-              <div className={`grid ${gridColsClass} gap-6 sm:gap-8 items-end`}>
+              {/* Dynamic Signatories Row (1, 2, 3, or more researchers) */}
+              <div className={`grid ${gridColsClass} gap-3 sm:gap-6 items-end pt-1`}>
                 {activeSignatories.map((sig, idx) => (
-                  <div key={sig.id || `sig-${idx}`} className="text-center space-y-1">
+                  <div key={sig.id || `sig-${idx}`} className="text-center space-y-0.5">
                     {/* Handwritten Signature Ink Image */}
-                    <div className="h-14 sm:h-16 flex items-end justify-center">
+                    <div className="h-10 sm:h-12 flex items-end justify-center overflow-hidden">
                       {sig.signatureUrl ? (
                         <img
                           src={sig.signatureUrl}
                           alt={sig.name}
-                          className="max-h-14 sm:max-h-16 w-auto max-w-[180px] object-contain"
+                          className="max-h-10 sm:max-h-12 w-auto max-w-[140px] object-contain"
                         />
                       ) : (
-                        <span className="font-serif italic text-xl text-zinc-700 select-none pb-1">
+                        <span className="font-serif italic text-sm sm:text-base text-zinc-700 select-none pb-0.5">
                           {sig.name}
                         </span>
                       )}
                     </div>
 
                     {/* Underline Rule */}
-                    <div className="w-full max-w-[220px] mx-auto border-b-2 border-zinc-900" />
+                    <div className="w-full max-w-[180px] mx-auto border-b-2 border-zinc-900" />
 
                     {/* Printed Name & Credentials */}
-                    <p className="text-xs sm:text-sm font-bold text-zinc-950 font-sans tracking-tight pt-1 uppercase">
+                    <p className="text-[10px] sm:text-xs font-bold text-zinc-950 font-sans tracking-tight pt-0.5 uppercase truncate">
                       {sig.name}
                     </p>
-                    <p className="text-[10px] sm:text-[11px] text-zinc-600 font-sans font-medium">
+                    <p className="text-[8px] sm:text-[9px] text-zinc-600 font-sans font-medium truncate">
                       {sig.title}
                     </p>
-                    <p className="text-[9px] sm:text-[10px] text-zinc-500 font-mono">
+                    <p className="text-[7px] sm:text-[8px] text-zinc-500 font-mono truncate">
                       {sig.organization}
                     </p>
                   </div>

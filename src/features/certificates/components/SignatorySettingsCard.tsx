@@ -744,9 +744,9 @@ export function SignatorySettingsCard({
             </div>
           </DialogHeader>
 
-          {/* Scrollable Landscape Container: Mobile NEVER squishes into a vertical column */}
-          <div className="overflow-x-auto w-full py-4 bg-muted/10">
-            <div className="min-w-[680px] sm:min-w-[800px] mx-auto p-2">
+          {/* Fixed Box Container: Locked landscape proportions (aspect 1.414 / 1), horizontal scroll on mobile */}
+          <div className="overflow-x-auto w-full py-4 bg-zinc-950/20 border border-border flex justify-start lg:justify-center">
+            <div className="w-[840px] shrink-0 p-2">
               <CertificateCard
                 recipientName="Hugo Smith"
                 recipientRole="IT Specialist / Aquaculture Evaluator"

@@ -289,9 +289,9 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
           </p>
         </div>
 
-        {/* Professional Certificate of Appreciation (Horizontal scroll wrapper prevents mobile squishing) */}
-        <div className="overflow-x-auto w-full pb-2">
-          <div className="min-w-[680px] sm:min-w-full">
+        {/* Professional Certificate of Appreciation (Fixed landscape box) */}
+        <div className="overflow-x-auto w-full pb-4 flex justify-start lg:justify-center">
+          <div className="w-[840px] shrink-0">
             <CertificateCard
               recipientName={issuedCert.recipient_name}
               recipientRole={issuedCert.recipient_role}
@@ -453,7 +453,7 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
           {survey.instructions && (
             <div className="p-4 sm:p-5 rounded-none bg-secondary/50 border border-border/70 text-sm sm:text-base text-muted-foreground leading-relaxed font-mono">
               <strong className="text-foreground block mb-1.5 uppercase tracking-wider text-sm sm:text-base font-bold">Instructions:</strong>
-              {survey.instructions}
+              {survey.instructions.replace(/Disa\s+gree/gi, "Disagree")}
             </div>
           )}
         </CardHeader>
@@ -477,21 +477,35 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
       )}
 
       {/* Questions List */}
-      <div className="space-y-6">
+      <div className="space-y-8 sm:space-y-10">
         {survey.schema.questions.map((question, qIdx) => {
           // 1. Likert Matrix Question
           if (question.type === "likert_matrix" && question.matrixRows) {
             const scaleObj = question.scale?.labels || defaultScaleLabels;
             const scaleValues = [5, 4, 3, 2, 1];
+            const sectionInfo = survey.schema.sections?.find((s) => s.id === question.sectionId);
 
             return (
-              <Card key={question.id} className="relative bg-card/70 border-border rounded-none shadow-sm">
+              <Card key={question.id} className="relative bg-card/80 border-2 border-border rounded-none shadow-sm">
                 <DecorIcon position="top-right" className="opacity-40" />
-                <CardHeader className="pb-3.5 border-b border-border/40">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wider">
-                      Section {qIdx + 1}
-                    </span>
+                <CardHeader className="p-5 sm:p-6 pb-4 border-b border-border/50 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      {sectionInfo?.part ? (
+                        <span className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wider bg-primary/10 border border-primary/30 px-2 py-0.5">
+                          {sectionInfo.part}
+                        </span>
+                      ) : (
+                        <span className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wider">
+                          Section {qIdx + 1}
+                        </span>
+                      )}
+                      {sectionInfo?.part && (
+                        <span className="text-xs sm:text-sm font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                          · {sectionInfo.title || `Section ${qIdx + 1}`}
+                        </span>
+                      )}
+                    </div>
                     {question.required ? (
                       <Badge variant="outline" className="text-[11px] sm:text-xs border-primary/50 text-primary bg-primary/10 rounded-none font-mono font-bold px-2 py-0.5">
                         REQUIRED
@@ -500,16 +514,16 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                       <span className="text-xs sm:text-sm font-mono text-muted-foreground">OPTIONAL</span>
                     )}
                   </div>
-                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold font-heading text-foreground tracking-tight pt-1">
+                  <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold font-heading text-foreground tracking-tight pt-1">
                     {question.title}
                   </CardTitle>
                   {question.description && (
                     <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-0.5">
-                      {question.description}
+                      {question.description.replace(/Disa\s+gree/gi, "Disagree")}
                     </CardDescription>
                   )}
                 </CardHeader>
-                <CardContent className="p-4 sm:p-5 space-y-5">
+                <CardContent className="p-5 sm:p-6 space-y-6">
                   {question.matrixRows.map((row) => {
                     const selectedVal = answers[row.id];
 
@@ -517,40 +531,37 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                       <div
                         key={row.id}
                         className={cn(
-                          "p-3.5 sm:p-4 rounded-none border transition-all space-y-3.5",
+                          "p-4 sm:p-5 rounded-none border-2 transition-all space-y-4",
                           selectedVal !== undefined
-                            ? "border-border/80 bg-background/60 shadow-xs"
-                            : "border-border/40 bg-background/20"
+                            ? "border-primary/60 bg-primary/[0.03] shadow-xs"
+                            : "border-border/70 bg-card"
                         )}
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1.5">
-                          <div className="flex-1">
+                        {/* Statement Label & Description: Large, readable, high contrast */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-baseline gap-2">
                             {row.code && (
-                              <span className="font-mono text-sm sm:text-base font-bold text-primary mr-2">
+                              <span className="font-mono text-base sm:text-lg font-bold text-primary shrink-0">
                                 [{row.code}]
                               </span>
                             )}
-                            <span className="text-sm sm:text-base md:text-lg font-semibold text-foreground">
+                            <span className="text-base sm:text-xl font-bold text-foreground tracking-tight">
                               {row.label}
                             </span>
-                            {row.description && (
-                              <p className="text-sm sm:text-base text-muted-foreground mt-1 leading-relaxed">
-                                {row.description}
-                              </p>
-                            )}
                           </div>
-                          {selectedVal !== undefined && (
-                            <span className="text-xs sm:text-sm font-mono text-emerald-600 dark:text-emerald-400 shrink-0 font-bold bg-emerald-500/10 px-2 py-0.5 border border-emerald-500/30">
-                              Selected: {selectedVal} ({scaleObj[selectedVal] || defaultScaleLabels[selectedVal]})
-                            </span>
+                          {row.description && (
+                            <p className="text-base sm:text-lg md:text-xl text-foreground font-medium sm:font-semibold leading-relaxed mt-1.5">
+                              {row.description.replace(/Disa\s+gree/gi, "Disagree")}
+                            </p>
                           )}
                         </div>
 
-                        {/* Interactive 5-point choice buttons with BOTH number & name */}
-                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                        {/* Interactive 5-point rating buttons (NO unrequested green badge!) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
                           {scaleValues.map((val) => {
                             const isSelected = selectedVal === val;
-                            const labelName = scaleObj[val] || defaultScaleLabels[val] || `Rating ${val}`;
+                            const rawLabel = scaleObj[val] || defaultScaleLabels[val] || `Rating ${val}`;
+                            const labelName = rawLabel.replace(/Disa\s+gree/gi, "Disagree");
 
                             return (
                               <button
@@ -558,16 +569,16 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                                 type="button"
                                 onClick={() => handleLikertAnswer(row.id, val)}
                                 className={cn(
-                                  "p-2.5 sm:p-3 rounded-none border text-center transition-all cursor-pointer flex sm:flex-col items-center justify-between sm:justify-center gap-1.5 min-h-[58px] sm:min-h-[64px]",
+                                  "p-3 sm:p-3.5 rounded-none border-2 text-center transition-all cursor-pointer flex sm:flex-col items-center justify-between sm:justify-center gap-2 min-h-[58px] sm:min-h-[68px]",
                                   isSelected
-                                    ? "bg-primary text-primary-foreground border-primary font-bold shadow-md"
-                                    : "bg-secondary/40 hover:bg-secondary border-border/80 text-muted-foreground hover:text-foreground hover:border-foreground/30"
+                                    ? "bg-primary text-primary-foreground border-primary font-bold shadow-md ring-2 ring-primary/30"
+                                    : "bg-background hover:bg-secondary/60 border-border text-foreground hover:border-foreground/50"
                                 )}
                               >
-                                <span className="font-mono text-base sm:text-lg md:text-xl font-black leading-none">
+                                <span className="font-mono text-lg sm:text-2xl font-black leading-none">
                                   {val}
                                 </span>
-                                <span className="text-xs sm:text-xs font-mono font-semibold uppercase tracking-tight text-right sm:text-center leading-tight">
+                                <span className="text-xs sm:text-xs font-mono font-bold uppercase tracking-tight text-right sm:text-center leading-tight whitespace-nowrap">
                                   {labelName}
                                 </span>
                               </button>
@@ -585,9 +596,9 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
           // 2. Single Choice (Radio)
           if (question.type === "single_choice" && question.options) {
             return (
-              <Card key={question.id} className="relative bg-card/70 border-border rounded-none shadow-sm">
+              <Card key={question.id} className="relative bg-card border-2 border-border rounded-none shadow-sm">
                 <DecorIcon position="top-right" className="opacity-30" />
-                <CardHeader className="pb-3.5">
+                <CardHeader className="p-5 sm:p-6 pb-4 border-b border-border/40">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs sm:text-sm font-mono font-bold text-primary uppercase tracking-wider">
                       Question {qIdx + 1}
@@ -600,35 +611,44 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
                       <span className="text-xs sm:text-sm font-mono text-muted-foreground">OPTIONAL</span>
                     )}
                   </div>
-                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold font-heading text-foreground tracking-tight pt-1">
+                  <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold font-heading text-foreground tracking-tight pt-1">
                     {question.title}
                   </CardTitle>
                   {question.description && (
                     <CardDescription className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-0.5">
-                      {question.description}
+                      {question.description.replace(/Disa\s+gree/gi, "Disagree")}
                     </CardDescription>
                   )}
                 </CardHeader>
-                <CardContent className="p-4 sm:p-5 pt-0">
+                <CardContent className="p-5 sm:p-6">
                   <RadioGroup
                     value={answers[question.id] || ""}
                     onValueChange={(val) => handleTextAnswer(question.id, val)}
-                    className="grid sm:grid-cols-2 gap-3"
+                    className="flex flex-col gap-3.5"
                   >
-                    {question.options.map((opt) => (
-                      <label
-                        key={opt}
-                        className={cn(
-                          "flex items-center gap-3.5 p-3.5 sm:p-4 rounded-none border cursor-pointer transition-all",
-                          answers[question.id] === opt
-                            ? "bg-primary/10 border-primary text-foreground font-semibold shadow-xs"
-                            : "bg-background/40 border-border/70 text-muted-foreground hover:text-foreground hover:bg-secondary/40"
-                        )}
-                      >
-                        <RadioGroupItem value={opt} id={`${question.id}-${opt}`} className="size-5 shrink-0" />
-                        <span className="text-sm sm:text-base font-medium">{opt}</span>
-                      </label>
-                    ))}
+                    {question.options.map((opt) => {
+                      const isSelected = answers[question.id] === opt;
+                      return (
+                        <label
+                          key={opt}
+                          className={cn(
+                            "flex items-center gap-4 p-4 sm:p-4.5 rounded-none border-2 cursor-pointer transition-all select-none",
+                            isSelected
+                              ? "bg-primary/15 border-primary text-foreground font-bold shadow-xs"
+                              : "bg-background border-border hover:border-foreground/40 text-foreground"
+                          )}
+                        >
+                          <RadioGroupItem
+                            value={opt}
+                            id={`${question.id}-${opt}`}
+                            className="size-5 shrink-0 border-2"
+                          />
+                          <span className="text-base sm:text-lg font-medium leading-normal">
+                            {opt}
+                          </span>
+                        </label>
+                      );
+                    })}
                   </RadioGroup>
                 </CardContent>
               </Card>
