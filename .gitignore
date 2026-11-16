@@ -35,8 +35,10 @@ extracted_pdf_sample.txt
 # Editor and OS
 .DS_Store
 *.pem
-.vscode/*
-!.vscode/mcp.json
+.vscode/
+.mcp.json
+.agents/
+skills-lock.json
 .idea/
 *.suo
 *.ntvs*

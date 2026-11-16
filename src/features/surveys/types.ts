@@ -77,6 +77,7 @@ export interface SurveySettings {
   capstoneLogoUrl?: string;
   certificateThemeColor?: string;
   creatorDeviceId?: string;
+  creatorEmail?: string;
 }
 
 export interface SurveySchema {
@@ -108,6 +109,7 @@ export interface Survey {
   capstone_logo_url?: string | null;
   certificate_theme_color?: string | null;
   creator_device_id?: string | null;
+  creator_email?: string | null;
 }
 
 export type SurveyAnswerValue = string | number | string[] | Record<string, number>;

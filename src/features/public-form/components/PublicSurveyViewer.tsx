@@ -289,36 +289,34 @@ export function PublicSurveyViewer({ survey, initialResponse }: PublicSurveyView
           </p>
         </div>
 
-        {/* Professional Certificate of Appreciation (Fixed landscape box) */}
-        <div className="overflow-x-auto w-full pb-4 flex justify-start lg:justify-center">
-          <div className="w-[840px] shrink-0">
-            <CertificateCard
-              recipientName={issuedCert.recipient_name}
-              recipientRole={issuedCert.recipient_role}
-              surveyTitle={issuedCert.survey_title}
-              certificateCode={issuedCert.certificate_code}
-              qrDataUrl={qrDataUrl}
-              themeColor={issuedCert.certificate_theme_color || "gold"}
-              capstoneLogoUrl={issuedCert.capstone_logo_url}
-              capstoneOrgName={issuedCert.signatory_organization}
-              signatories={
-                issuedCert.signatories ||
-                issuedCert.metadata?.signatories ||
-                survey.schema.settings?.signatories
-              }
-              signatoryName={issuedCert.signatory_name}
-              signatoryTitle={issuedCert.signatory_title}
-              signatoryOrganization={issuedCert.signatory_organization}
-              signatorySignatureUrl={issuedCert.signatory_signature_url}
-              secondarySignatoryName={issuedCert.secondary_signatory_name}
-              secondarySignatoryTitle={issuedCert.secondary_signatory_title}
-              secondarySignatoryOrganization={issuedCert.secondary_signatory_organization}
-              secondarySignatorySignatureUrl={issuedCert.secondary_signatory_signature_url}
-              onDownloadPdf={handleDownloadCertificate}
-              isDownloading={isDownloadingCert}
-              showActions={true}
-            />
-          </div>
+        {/* High-Resolution Responsive Certificate Card */}
+        <div className="w-full max-w-4xl mx-auto">
+          <CertificateCard
+            recipientName={issuedCert.recipient_name}
+            recipientRole={issuedCert.recipient_role}
+            surveyTitle={issuedCert.survey_title}
+            certificateCode={issuedCert.certificate_code}
+            qrDataUrl={qrDataUrl}
+            themeColor={issuedCert.certificate_theme_color || "gold"}
+            capstoneLogoUrl={issuedCert.capstone_logo_url}
+            capstoneOrgName="HITOVIS"
+            signatories={
+              issuedCert.signatories ||
+              issuedCert.metadata?.signatories ||
+              survey.schema.settings?.signatories
+            }
+            signatoryName={issuedCert.signatory_name}
+            signatoryTitle={issuedCert.signatory_title}
+            signatoryOrganization={issuedCert.signatory_organization}
+            signatorySignatureUrl={issuedCert.signatory_signature_url}
+            secondarySignatoryName={issuedCert.secondary_signatory_name}
+            secondarySignatoryTitle={issuedCert.secondary_signatory_title}
+            secondarySignatoryOrganization={issuedCert.secondary_signatory_organization}
+            secondarySignatorySignatureUrl={issuedCert.secondary_signatory_signature_url}
+            onDownloadPdf={handleDownloadCertificate}
+            isDownloading={isDownloadingCert}
+            showActions={true}
+          />
         </div>
 
         {/* Action Buttons */}

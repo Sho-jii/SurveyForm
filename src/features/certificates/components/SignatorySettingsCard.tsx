@@ -72,21 +72,21 @@ const DEFAULT_HITOVIS_SIGNATORIES: SurveySignatory[] = [
     id: "sig-1",
     name: RECOGNIZED_BY_NAME,
     title: RECOGNIZED_BY_TITLE,
-    organization: "Mindoro State University",
+    organization: "",
     signatureUrl: JARIB_SIGNATURE_BASE64,
   },
   {
     id: "sig-2",
     name: "GRACE MELODY R. MANALO",
     title: "Co-Researcher & Project Lead",
-    organization: "Mindoro State University",
+    organization: "",
     signatureUrl: "",
   },
   {
     id: "sig-3",
     name: "RALF CARLO C. LEGASPI",
     title: "Co-Researcher & Hardware Specialist",
-    organization: "Mindoro State University",
+    organization: "",
     signatureUrl: "",
   },
 ];
@@ -121,7 +121,7 @@ export function SignatorySettingsCard({
           id: "sig-1",
           name: initialData.signatoryName,
           title: initialData.signatoryTitle || RECOGNIZED_BY_TITLE,
-          organization: initialData.signatoryOrganization || "Mindoro State University",
+          organization: initialData.signatoryOrganization || "",
           signatureUrl: initialData.signatorySignatureUrl || JARIB_SIGNATURE_BASE64,
         },
       ];
@@ -130,7 +130,7 @@ export function SignatorySettingsCard({
           id: "sig-2",
           name: initialData.secondarySignatoryName,
           title: initialData.secondarySignatoryTitle || "Co-Researcher & Project Lead",
-          organization: initialData.secondarySignatoryOrganization || "Mindoro State University",
+          organization: initialData.secondarySignatoryOrganization || "",
           signatureUrl: initialData.secondarySignatorySignatureUrl || "",
         });
       }
@@ -171,7 +171,7 @@ export function SignatorySettingsCard({
           id: "sig-1",
           name: initialData.signatoryName,
           title: initialData.signatoryTitle || RECOGNIZED_BY_TITLE,
-          organization: initialData.signatoryOrganization || "Mindoro State University",
+          organization: initialData.signatoryOrganization || "",
           signatureUrl: initialData.signatorySignatureUrl || JARIB_SIGNATURE_BASE64,
         },
       ];
@@ -180,7 +180,7 @@ export function SignatorySettingsCard({
           id: "sig-2",
           name: initialData.secondarySignatoryName,
           title: initialData.secondarySignatoryTitle || "Co-Researcher & Project Lead",
-          organization: initialData.secondarySignatoryOrganization || "Mindoro State University",
+          organization: initialData.secondarySignatoryOrganization || "",
           signatureUrl: initialData.secondarySignatorySignatureUrl || "",
         });
       }
@@ -198,7 +198,7 @@ export function SignatorySettingsCard({
         id: newId,
         name: "",
         title: `Co-Researcher ${newMemberNumber}`,
-        organization: signatories[0]?.organization || "Mindoro State University",
+        organization: signatories[0]?.organization || "",
         signatureUrl: "",
       },
     ]);
@@ -295,7 +295,7 @@ export function SignatorySettingsCard({
     const primary = signatories[0] || {
       name: RECOGNIZED_BY_NAME,
       title: RECOGNIZED_BY_TITLE,
-      organization: "Mindoro State University",
+      organization: "",
       signatureUrl: JARIB_SIGNATURE_BASE64,
     };
     const secondary = signatories[1];
@@ -764,22 +764,20 @@ export function SignatorySettingsCard({
             </div>
           </DialogHeader>
 
-          {/* Fixed Box Container: Locked landscape proportions (aspect 1.414 / 1), horizontal scroll on mobile */}
-          <div className="overflow-x-auto w-full py-4 bg-zinc-950/20 border border-border flex justify-start lg:justify-center">
-            <div className="w-[840px] shrink-0 p-2">
-              <CertificateCard
-                recipientName="Hugo Smith"
-                recipientRole="IT Specialist / Aquaculture Evaluator"
-                surveyTitle={surveyTitle}
-                certificateCode="CERT-SAMPLE-2026"
-                qrDataUrl={sampleQrUrl}
-                themeColor={themeColor}
-                capstoneLogoUrl={capstoneLogoUrl}
-                capstoneOrgName={signatories[0]?.organization || "HITOVIS RESEARCH PROJECT"}
-                signatories={signatories}
-                showActions={false}
-              />
-            </div>
+          {/* High-Resolution Responsive Certificate Preview */}
+          <div className="w-full max-w-4xl mx-auto py-2">
+            <CertificateCard
+              recipientName="Hugo Smith"
+              recipientRole="IT Specialist / Aquaculture Evaluator"
+              surveyTitle={surveyTitle}
+              certificateCode="CERT-SAMPLE-2026"
+              qrDataUrl={sampleQrUrl}
+              themeColor={themeColor}
+              capstoneLogoUrl={capstoneLogoUrl}
+              capstoneOrgName="HITOVIS"
+              signatories={signatories}
+              showActions={false}
+            />
           </div>
         </DialogContent>
       </Dialog>

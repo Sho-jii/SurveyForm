@@ -234,6 +234,7 @@ function hydrateSurveyRecord(record: any): Survey {
     secondary_signatory_organization: settings.secondarySignatoryOrganization || record.secondary_signatory_organization || null,
     secondary_signatory_signature_url: settings.secondarySignatorySignatureUrl || record.secondary_signatory_signature_url || null,
     creator_device_id: settings.creatorDeviceId || record.creator_device_id || null,
+    creator_email: record.creator_email || settings.creatorEmail || (record.id === "c7a26b67-0acb-4895-9c1d-d4ec5f260a81" ? "siocojarib@gmail.com" : null),
     response_count: record.survey_responses?.[0]?.count ?? record.response_count ?? 0,
   } as Survey;
 }
@@ -261,17 +262,41 @@ export const surveyService = {
   },
 
   /**
-   * Returns only surveys created by or owned by the current device session.
-   * Survives device restarts and browser reboots.
+   * Returns only surveys managed by the current user or device.
+   * If user is authenticated, filters by user.email and admin privilege.
+   * If unauthenticated, only permits local drafts and legacy device-owned surveys without an attached email.
    */
-  async getMySurveys(): Promise<Survey[]> {
+  async getMySurveys(user?: any | null): Promise<Survey[]> {
     const all = await this.getAllSurveys();
     if (typeof window === "undefined") return all;
 
+    const userEmail = (user?.email || "").toLowerCase().trim();
+
     return all.filter((s) => {
-      const creator = s.schema?.settings?.creatorDeviceId || s.creator_device_id;
-      return deviceSessionService.isOwner(s.id, creator);
+      const creatorEmail = (s.creator_email || s.schema?.settings?.creatorEmail || "").toLowerCase().trim();
+      
+      // Admin master access
+      if (userEmail && userEmail === "siocojarib@gmail.com") {
+        return true;
+      }
+
+      // If survey is attached to an email, user MUST be logged in with that email
+      if (creatorEmail) {
+        return userEmail === creatorEmail;
+      }
+
+      // If no email attached, fallback to device session
+      const creatorDeviceId = s.schema?.settings?.creatorDeviceId || s.creator_device_id;
+      return deviceSessionService.isOwner(s.id, creatorDeviceId);
     });
+  },
+
+  /**
+   * Returns all publicly available published surveys for the public directory.
+   */
+  async getPublicSurveys(): Promise<Survey[]> {
+    const all = await this.getAllSurveys();
+    return all.filter((s) => s.status === "published");
   },
 
   async getSurveyById(idOrSlug: string): Promise<Survey | null> {
@@ -312,7 +337,18 @@ export const surveyService = {
     const slug = data.slug || generateSlug(data.title);
     const currentDeviceId = typeof window !== "undefined" ? deviceSessionService.getDeviceId() : null;
 
-    // Attach current device token to schema settings for permanent session isolation
+    let userEmail: string | null = null;
+    if (isSupabaseConfigured) {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        userEmail = user?.email || null;
+      } catch (e) {
+        // guest creation
+      }
+    }
+
+    // Attach current device token and user email to schema settings for permanent session isolation
     const schemaWithDevice: SurveySchema = {
       ...data.schema,
       settings: {
@@ -322,6 +358,7 @@ export const surveyService = {
           showProgressBar: true,
         }),
         creatorDeviceId: data.schema.settings?.creatorDeviceId || currentDeviceId || undefined,
+        creatorEmail: userEmail || data.schema.settings?.creatorEmail || undefined,
       },
     };
 
@@ -337,6 +374,7 @@ export const surveyService = {
       updated_at: new Date().toISOString(),
       response_count: 0,
       creator_device_id: currentDeviceId,
+      creator_email: userEmail,
       signatory_name: data.signatory_name || data.schema.settings?.signatoryName || null,
       signatory_title: data.signatory_title || data.schema.settings?.signatoryTitle || null,
       signatory_organization: data.signatory_organization || data.schema.settings?.signatoryOrganization || null,
@@ -355,6 +393,7 @@ export const surveyService = {
             instructions: newSurvey.instructions,
             schema: newSurvey.schema,
             status: newSurvey.status,
+            creator_email: newSurvey.creator_email,
             signatory_name: newSurvey.signatory_name,
             signatory_title: newSurvey.signatory_title,
             signatory_organization: newSurvey.signatory_organization,
@@ -412,6 +451,7 @@ export const surveyService = {
       capstoneLogoUrl: updates.capstone_logo_url !== undefined ? (updates.capstone_logo_url || undefined) : currentSchema.settings?.capstoneLogoUrl,
       certificateThemeColor: updates.certificate_theme_color !== undefined ? (updates.certificate_theme_color || undefined) : currentSchema.settings?.certificateThemeColor,
       creatorDeviceId: updates.creator_device_id !== undefined ? (updates.creator_device_id || undefined) : currentSchema.settings?.creatorDeviceId,
+      creatorEmail: updates.creator_email !== undefined ? (updates.creator_email || undefined) : currentSchema.settings?.creatorEmail,
     };
 
     const finalSchema: SurveySchema = {
@@ -434,6 +474,7 @@ export const surveyService = {
     if (updates.signatory_title !== undefined) dbPayload.signatory_title = updates.signatory_title;
     if (updates.signatory_organization !== undefined) dbPayload.signatory_organization = updates.signatory_organization;
     if (updates.signatory_signature_url !== undefined) dbPayload.signatory_signature_url = updates.signatory_signature_url;
+    if (updates.creator_email !== undefined) dbPayload.creator_email = updates.creator_email;
 
     // 4. Update in Supabase
     let savedSurvey: Survey | null = null;

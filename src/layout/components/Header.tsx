@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { MobileNav } from "@/components/mobile-nav";
+import { GoogleAuthButton } from "@/components/common/GoogleAuthButton";
 import { useScroll } from "@/hooks/use-scroll";
 import { Sparkles, LayoutGrid, Plus, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -76,6 +77,8 @@ export function Header() {
         {/* Right Controls: Desktop */}
         <div className="hidden md:flex items-center gap-2">
           <ThemeToggle />
+          {/* Renders nothing when logged out; renders prominent [email] [LOGOUT] when logged in */}
+          <GoogleAuthButton variant="header" />
           <Button
             asChild
             size="sm"

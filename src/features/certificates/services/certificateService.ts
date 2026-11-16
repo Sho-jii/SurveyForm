@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import { createClient } from "@/services/supabase/client";
 import { SurveySignatory } from "@/features/surveys/types";
+import { renderCertificateToCanvas } from "../utils/certificateCanvasRenderer";
 import {
   JARIB_SIGNATURE_BASE64,
   RECOGNIZED_BY_NAME,
@@ -298,18 +299,57 @@ export const certificateService = {
 
     // Always use current date
     const now = new Date();
+    const dateFormatted = `${String(now.getDate()).padStart(2, "0")} / ${String(now.getMonth() + 1).padStart(2, "0")} / ${now.getFullYear()}`;
     const dateStr = now.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
 
-    // Resolve color theme
-    const themeKey = cert.certificate_theme_color || "gold";
-    const theme = CERTIFICATE_THEMES[themeKey] || CERTIFICATE_THEMES.gold;
-
     // Generate QR Code
     const qrDataUrl = await this.generateQrCodeDataUrl(verificationUrl);
+
+    // If running in browser environment, generate high-res canvas matching exact target design
+    if (typeof document !== "undefined") {
+      try {
+        const canvas = document.createElement("canvas");
+        const dataUrl = await renderCertificateToCanvas(canvas, {
+          recipientName: cert.recipient_name,
+          recipientRole: cert.recipient_role,
+          surveyTitle: cert.survey_title,
+          certificateCode: cert.certificate_code,
+          issuedAt: dateFormatted,
+          capstoneLogoUrl: cert.capstone_logo_url,
+          capstoneOrgName: cert.signatory_organization,
+          signatories: cert.signatories || cert.metadata?.signatories,
+          signatoryName: cert.signatory_name,
+          signatoryTitle: cert.signatory_title,
+          signatoryOrganization: cert.signatory_organization,
+          signatorySignatureUrl: cert.signatory_signature_url,
+          secondarySignatoryName: cert.secondary_signatory_name,
+          secondarySignatoryTitle: cert.secondary_signatory_title,
+          secondarySignatoryOrganization: cert.secondary_signatory_organization,
+          secondarySignatorySignatureUrl: cert.secondary_signatory_signature_url,
+          qrDataUrl,
+          themeColor: cert.certificate_theme_color || "gold",
+        });
+
+        const doc = new jsPDF({
+          orientation: "landscape",
+          unit: "mm",
+          format: "a4",
+        });
+        doc.addImage(dataUrl, "PNG", 0, 0, 297, 210, undefined, "FAST");
+        doc.save(`${cert.certificate_code || "Certificate"}_Completion.pdf`);
+        return;
+      } catch (err) {
+        console.warn("Canvas-based PDF rasterization fallback:", err);
+      }
+    }
+
+    // Fallback Vector PDF Generation
+    const themeKey = cert.certificate_theme_color || "gold";
+    const theme = CERTIFICATE_THEMES[themeKey] || CERTIFICATE_THEMES.gold;
 
     // Create Landscape A4 PDF: 297mm width x 210mm height
     const doc = new jsPDF({
@@ -462,7 +502,7 @@ export const certificateService = {
           id: "sig-1",
           name: cert.signatory_name || RECOGNIZED_BY_NAME,
           title: cert.signatory_title || RECOGNIZED_BY_TITLE,
-          organization: cert.signatory_organization || "Mindoro State University",
+          organization: cert.signatory_organization || "",
           signatureUrl: cert.signatory_signature_url || JARIB_SIGNATURE_BASE64,
         },
       ];
@@ -471,7 +511,7 @@ export const certificateService = {
           id: "sig-2",
           name: cert.secondary_signatory_name,
           title: cert.secondary_signatory_title || "Co-Researcher & Project Lead",
-          organization: cert.secondary_signatory_organization || "Mindoro State University",
+          organization: cert.secondary_signatory_organization || "",
           signatureUrl: cert.secondary_signatory_signature_url || undefined,
         });
       }

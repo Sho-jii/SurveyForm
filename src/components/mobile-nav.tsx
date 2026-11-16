@@ -1,13 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Portal, PortalBackdrop } from "@/components/portal";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { BrandLogo } from "@/components/common/BrandLogo";
-import { Menu, X, Sparkles, LayoutGrid, Plus, Home } from "lucide-react";
+import { GoogleAuthButton } from "@/components/common/GoogleAuthButton";
+import { authService } from "@/services/auth/authService";
+import type { User } from "@supabase/supabase-js";
+import { Menu, X, Sparkles, LayoutGrid, Plus, Home, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MobileNavProps {
@@ -16,16 +19,44 @@ interface MobileNavProps {
 
 export function MobileNav({ navLinks }: MobileNavProps) {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const pathname = usePathname();
 
+  useEffect(() => {
+    let mounted = true;
+    authService.getCurrentUser().then((u) => {
+      if (mounted) setUser(u);
+    });
+
+    const unsubscribe = authService.onAuthStateChange((u) => {
+      if (mounted) setUser(u);
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, []);
+
+  const handleMobileSignOut = async () => {
+    setOpen(false);
+    await authService.signOut();
+    if (typeof window !== "undefined") {
+      window.location.reload();
+    }
+  };
+
   return (
-    <div className="md:hidden flex items-center gap-2">
+    <div className="md:hidden flex items-center gap-1.5 sm:gap-2">
       <ThemeToggle />
+      {/* Prominent Logout Button on mobile bar when authenticated */}
+      <GoogleAuthButton variant="header" />
+
       <Button
         aria-controls="mobile-menu"
         aria-expanded={open}
         aria-label="Toggle navigation menu"
-        className="md:hidden rounded-none size-9 border-border bg-card/60"
+        className="rounded-none size-9 border-border bg-card/60 p-0"
         onClick={() => setOpen(!open)}
         size="icon"
         variant="outline"
@@ -80,8 +111,26 @@ export function MobileNav({ navLinks }: MobileNavProps) {
               </div>
             </div>
 
-            {/* Bottom Actions */}
+            {/* Bottom Actions & User Session */}
             <div className="mt-8 flex flex-col gap-2.5 pt-4 border-t border-border/60 font-mono">
+              {user && (
+                <div className="p-3 bg-secondary/50 border border-border/80 space-y-2">
+                  <div className="flex items-center gap-2 text-xs font-mono">
+                    <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                    <span className="text-foreground font-bold truncate">{user.email}</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleMobileSignOut}
+                    className="w-full rounded-none h-9 text-red-600 dark:text-red-400 border-red-500/50 bg-red-500/10 hover:bg-red-500 hover:text-white font-mono text-xs uppercase tracking-wider font-bold flex items-center justify-center gap-2"
+                  >
+                    <LogOut className="size-3.5" />
+                    <span>LOGOUT ACCOUNT</span>
+                  </Button>
+                </div>
+              )}
+
               <Link href="/surveys/new" onClick={() => setOpen(false)}>
                 <Button className="w-full rounded-none gap-2 text-xs uppercase tracking-wider font-bold">
                   <Sparkles className="size-3.5" />
@@ -90,7 +139,7 @@ export function MobileNav({ navLinks }: MobileNavProps) {
               </Link>
               <Link href="/surveys" onClick={() => setOpen(false)}>
                 <Button variant="outline" className="w-full rounded-none text-xs uppercase tracking-wider">
-                  <span>Open Survey Dashboard</span>
+                  <span>Open Survey Directory</span>
                 </Button>
               </Link>
             </div>
@@ -100,4 +149,3 @@ export function MobileNav({ navLinks }: MobileNavProps) {
     </div>
   );
 }
-

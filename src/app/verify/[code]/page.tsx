@@ -137,32 +137,30 @@ export default function CertificateVerificationPage() {
               </p>
             </div>
 
-            {/* Professional Certificate of Appreciation (Fixed landscape box) */}
-            <div className="overflow-x-auto w-full pb-4 flex justify-start lg:justify-center">
-              <div className="w-[840px] shrink-0">
-                <CertificateCard
-                  recipientName={cert.recipient_name}
-                  recipientRole={cert.recipient_role}
-                  surveyTitle={cert.survey_title}
-                  certificateCode={cert.certificate_code}
-                  qrDataUrl={qrDataUrl}
-                  themeColor={cert.certificate_theme_color || "gold"}
-                  capstoneLogoUrl={cert.capstone_logo_url}
-                  capstoneOrgName={cert.signatory_organization}
-                  signatories={cert.signatories || cert.metadata?.signatories}
-                  signatoryName={cert.signatory_name}
-                  signatoryTitle={cert.signatory_title}
-                  signatoryOrganization={cert.signatory_organization}
-                  signatorySignatureUrl={cert.signatory_signature_url}
-                  secondarySignatoryName={cert.secondary_signatory_name}
-                  secondarySignatoryTitle={cert.secondary_signatory_title}
-                  secondarySignatoryOrganization={cert.secondary_signatory_organization}
-                  secondarySignatorySignatureUrl={cert.secondary_signatory_signature_url}
-                  onDownloadPdf={handleDownload}
-                  isDownloading={isDownloading}
-                  showActions={true}
-                />
-              </div>
+            {/* High-Resolution Responsive Certificate Card */}
+            <div className="w-full max-w-4xl mx-auto">
+              <CertificateCard
+                recipientName={cert.recipient_name}
+                recipientRole={cert.recipient_role}
+                surveyTitle={cert.survey_title}
+                certificateCode={cert.certificate_code}
+                qrDataUrl={qrDataUrl}
+                themeColor={cert.certificate_theme_color || "gold"}
+                capstoneLogoUrl={cert.capstone_logo_url}
+                capstoneOrgName="HITOVIS"
+                signatories={cert.signatories || cert.metadata?.signatories}
+                signatoryName={cert.signatory_name}
+                signatoryTitle={cert.signatory_title}
+                signatoryOrganization={cert.signatory_organization}
+                signatorySignatureUrl={cert.signatory_signature_url}
+                secondarySignatoryName={cert.secondary_signatory_name}
+                secondarySignatoryTitle={cert.secondary_signatory_title}
+                secondarySignatoryOrganization={cert.secondary_signatory_organization}
+                secondarySignatorySignatureUrl={cert.secondary_signatory_signature_url}
+                onDownloadPdf={handleDownload}
+                isDownloading={isDownloading}
+                showActions={true}
+              />
             </div>
 
             {/* Back link */}

@@ -17,6 +17,9 @@ import { SurveyFormBuilder } from "./SurveyFormBuilder";
 import { ShareModal } from "./ShareModal";
 import { SignatorySettingsCard, SignatoryData } from "@/features/certificates/components/SignatorySettingsCard";
 import { deviceSessionService } from "@/services/session/deviceSessionService";
+import { authService, ADMIN_EMAIL } from "@/services/auth/authService";
+import { GoogleAuthButton } from "@/components/common/GoogleAuthButton";
+import type { User } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 import {
   Share2,
@@ -28,9 +31,11 @@ import {
   Award,
   Calculator,
   ShieldAlert,
+  Lock,
 } from "lucide-react";
 
 export function SurveyDetailView({ id }: { id: string }) {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [responses, setResponses] = useState<SurveyResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +44,23 @@ export function SurveyDetailView({ id }: { id: string }) {
   const [isSavingSignatory, setIsSavingSignatory] = useState(false);
   const [isOwner, setIsOwner] = useState(true);
 
+  // Subscribe to auth state
+  useEffect(() => {
+    let mounted = true;
+    authService.getCurrentUser().then((u) => {
+      if (mounted) setCurrentUser(u);
+    });
+
+    const unsubscribe = authService.onAuthStateChange((u) => {
+      if (mounted) setCurrentUser(u);
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, []);
+
   const loadData = async () => {
     setIsLoading(true);
     try {
@@ -46,7 +68,7 @@ export function SurveyDetailView({ id }: { id: string }) {
       if (s) {
         setSurvey(s);
         const creatorId = s.schema?.settings?.creatorDeviceId || s.creator_device_id;
-        const owns = deviceSessionService.isOwner(s.id, creatorId);
+        const owns = authService.isSurveyManager(s, currentUser) || deviceSessionService.isOwner(s.id, creatorId);
         setIsOwner(owns);
         const r = await surveyService.getSurveyResponses(s.id);
         setResponses(r);
@@ -60,7 +82,7 @@ export function SurveyDetailView({ id }: { id: string }) {
 
   useEffect(() => {
     loadData();
-  }, [id]);
+  }, [id, currentUser]);
 
   if (isLoading || !survey) {
     return <LoadingState message="Loading survey analytics & responses..." />;
@@ -77,12 +99,36 @@ export function SurveyDetailView({ id }: { id: string }) {
             Survey Management Restricted
           </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            This survey was created by another device or researcher session. To protect research integrity and prevent unauthorized modifications, editing and administration are restricted to the creator&apos;s device.
+            {currentUser ? (
+              <>
+                Signed in with an unauthorized Google account. To protect research data integrity, editing and campaign management are restricted to the authorized owner.
+              </>
+            ) : (
+              <>
+                This survey campaign is private. Sign in with the authorized survey creator Google account to view analytics, inspect responses, or modify survey settings.
+              </>
+            )}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-          <Link href={`/s/${survey.id}`}>
+          {!currentUser ? (
+            <GoogleAuthButton
+              variant="card"
+              redirectTo={typeof window !== "undefined" ? window.location.pathname : `/surveys/${survey.id}`}
+            />
+          ) : (
+            <Button
+              variant="outline"
+              size="default"
+              onClick={() => authService.signOut()}
+              className="rounded-none font-mono text-xs uppercase tracking-wider"
+            >
+              Switch Account
+            </Button>
+          )}
+
+          <Link href={`/s/${survey.slug || survey.id}`}>
             <Button size="default" className="rounded-none font-mono text-xs uppercase tracking-wider gap-2">
               <ExternalLink className="size-3.5" />
               <span>Answer Public Form</span>
@@ -90,7 +136,7 @@ export function SurveyDetailView({ id }: { id: string }) {
           </Link>
           <Link href="/surveys">
             <Button variant="outline" size="default" className="rounded-none font-mono text-xs uppercase tracking-wider">
-              Return to My Surveys
+              Return to Surveys
             </Button>
           </Link>
         </div>
