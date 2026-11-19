@@ -1,13 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseSurveyFromText } from "@/features/surveys/services/pdfParserService";
-import path from "path";
-import { pathToFileURL } from "url";
-import fs from "fs";
+import { getDocumentProxy, extractText } from "unpdf";
+import { createServerSupabaseClient } from "@/services/supabase/server";
 
 export const maxDuration = 60;
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Verify user authentication before processing the upload
+    let isAuthenticated = false;
+    try {
+      const supabase = await createServerSupabaseClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        isAuthenticated = true;
+      } else {
+        const authHeader = req.headers.get("authorization");
+        if (authHeader?.startsWith("Bearer ")) {
+          const token = authHeader.substring(7);
+          const {
+            data: { user: tokenUser },
+          } = await supabase.auth.getUser(token);
+          if (tokenUser) isAuthenticated = true;
+        }
+      }
+    } catch (authErr) {
+      console.warn("[PDF Parse Auth Warning]", authErr);
+    }
+
+    if (!isAuthenticated) {
+      return NextResponse.json(
+        {
+          error:
+            "Authentication required. Please sign in with your Google account before uploading or parsing survey documents.",
+        },
+        { status: 401 }
+      );
+    }
+
+    // 2. Validate file
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
@@ -15,45 +50,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No PDF file provided." }, { status: 400 });
     }
 
+    // 3. Extract text cleanly with unpdf (No worker threads or external .mjs worker dependencies)
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
+    const { totalPages, text: fullText } = await extractText(pdf, { mergePages: true });
 
-    // Dynamic import of pdfjs-dist legacy build
-    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-
-    // Configure workerSrc to absolute file URL so Node.js loads it without relative chunk errors
-    try {
-      const localPath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs");
-      if (fs.existsSync(localPath)) {
-        pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(localPath).href;
-      }
-    } catch (e) {
-      console.warn("[PDF Worker Setup Warning]", e);
-    }
-
-    const doc = await pdfjs.getDocument({
-      data: new Uint8Array(buffer),
-      isEvalSupported: false,
-      useSystemFonts: true,
-    }).promise;
-
-    let fullText = "";
-    for (let i = 1; i <= doc.numPages; i++) {
-      const page = await doc.getPage(i);
-      const content = await page.getTextContent();
-      let lastY: number | undefined;
-      let pageText = "";
-
-      for (const item of content.items as any[]) {
-        if (lastY !== undefined && Math.abs(item.transform[5] - lastY) > 5) {
-          pageText += "\n";
-        } else if (pageText.length > 0 && !pageText.endsWith("\n") && !pageText.endsWith(" ")) {
-          pageText += " ";
-        }
-        pageText += item.str;
-        lastY = item.transform[5];
-      }
-      fullText += pageText + "\n\n";
+    if (!fullText || fullText.trim().length === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Could not extract readable text from this PDF. Please ensure the document contains selectable text and is not a flattened image scan.",
+        },
+        { status: 422 }
+      );
     }
 
     const parsed = parseSurveyFromText(fullText, file.name);
@@ -64,7 +73,7 @@ export async function POST(req: NextRequest) {
       meta: {
         fileName: file.name,
         fileSize: file.size,
-        numPages: doc.numPages,
+        numPages: totalPages,
       },
     });
   } catch (error: any) {

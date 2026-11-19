@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
+import { authService } from "@/services/auth/authService";
 
 interface SurveyFormBuilderProps {
   initialData: {
@@ -210,6 +211,12 @@ export function SurveyFormBuilder({ initialData, surveyId, onSaveSuccess, onCanc
   const handleSaveSurvey = async () => {
     if (!title.trim()) {
       alert("Please provide a survey title.");
+      return;
+    }
+
+    const user = await authService.getCurrentUser();
+    if (!user) {
+      alert("Creator authentication required. Please sign in with your Google account before saving this survey.");
       return;
     }
 
