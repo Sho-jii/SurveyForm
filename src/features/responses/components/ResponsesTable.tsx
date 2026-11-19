@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Survey, SurveyResponse } from "@/features/surveys/types";
 import { ResponseEditorModal } from "./ResponseEditorModal";
+import { CertificatePreviewModal } from "@/features/certificates/components/CertificatePreviewModal";
 import { exportService } from "@/features/surveys/services/exportService";
 import {
   Edit2,
@@ -17,6 +18,7 @@ import {
   Clock,
   Download,
   ExternalLink,
+  Award,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
@@ -37,6 +39,8 @@ export function ResponsesTable({
   const [roleFilter, setRoleFilter] = useState("all");
   const [selectedResponse, setSelectedResponse] = useState<SurveyResponse | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [selectedCertResponse, setSelectedCertResponse] = useState<SurveyResponse | null>(null);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
 
   // Unique roles
   const roles = Array.from(
@@ -187,7 +191,21 @@ export function ResponsesTable({
                         </Badge>
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1 flex-wrap sm:flex-nowrap">
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCertResponse(r);
+                              setIsCertModalOpen(true);
+                            }}
+                            className="gap-1 rounded-none text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 border border-emerald-500/30"
+                            title="View respondent's Certificate of Appreciation"
+                          >
+                            <Award className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Certificate</span>
+                          </Button>
                           <Button
                             variant="ghost"
                             size="xs"
@@ -238,6 +256,20 @@ export function ResponsesTable({
           }}
           onSaved={onResponseUpdated}
           onDeleted={onResponseDeleted}
+        />
+      )}
+
+      {/* Certificate Preview Modal */}
+      {isCertModalOpen && selectedCertResponse && (
+        <CertificatePreviewModal
+          key={`cert_${selectedCertResponse.id}`}
+          isOpen={isCertModalOpen}
+          onClose={() => {
+            setIsCertModalOpen(false);
+            setSelectedCertResponse(null);
+          }}
+          survey={survey}
+          response={selectedCertResponse}
         />
       )}
     </div>

@@ -22,6 +22,7 @@ import {
 import { SurveySignatory } from "@/features/surveys/types";
 import { jsPDF } from "jspdf";
 import { renderCertificateToCanvas } from "../utils/certificateCanvasRenderer";
+import { cn } from "@/lib/utils";
 import {
   JARIB_SIGNATURE_BASE64,
   RECOGNIZED_BY_NAME,
@@ -51,6 +52,8 @@ export interface CertificateCardProps {
   isDownloading?: boolean;
   className?: string;
   showActions?: boolean;
+  fitHeight?: boolean;
+  onImageReady?: (dataUrl: string) => void;
 }
 
 export function CertificateCard({
@@ -76,6 +79,8 @@ export function CertificateCard({
   isDownloading = false,
   className = "",
   showActions = true,
+  fitHeight = false,
+  onImageReady,
 }: CertificateCardProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
@@ -109,12 +114,16 @@ export function CertificateCard({
         themeColor,
       });
       setImageUrl(dataUrl);
+      if (onImageReady) {
+        onImageReady(dataUrl);
+      }
     } catch (e) {
       console.error("Failed to render certificate to canvas:", e);
     } finally {
       setIsRendering(false);
     }
   }, [
+    onImageReady,
     recipientName,
     recipientRole,
     surveyTitle,
@@ -184,7 +193,12 @@ export function CertificateCard({
       <canvas ref={canvasRef} className="hidden" />
 
       {/* Responsive Certificate Card Preview Container */}
-      <div className="relative w-full border-2 border-border/80 bg-card rounded-none shadow-xl overflow-hidden group">
+      <div
+        className={cn(
+          "relative w-full border-2 border-border/80 bg-card rounded-none shadow-xl overflow-hidden group",
+          fitHeight && "max-h-[52vh] flex items-center justify-center bg-zinc-950/20"
+        )}
+      >
         {isRendering ? (
           <div className="w-full aspect-[1.414/1] flex flex-col items-center justify-center bg-zinc-950/20 text-muted-foreground font-mono text-xs gap-3 p-6">
             <div className="size-8 border-2 border-primary border-t-transparent animate-spin" />
@@ -192,7 +206,10 @@ export function CertificateCard({
           </div>
         ) : imageUrl ? (
           <div
-            className="relative cursor-pointer overflow-hidden bg-white select-none"
+            className={cn(
+              "relative cursor-pointer overflow-hidden bg-white select-none",
+              fitHeight ? "max-h-[52vh] flex items-center justify-center" : "w-full"
+            )}
             onClick={() => setIsFullscreenOpen(true)}
             title="Click to view fullscreen certificate"
           >
@@ -200,7 +217,10 @@ export function CertificateCard({
             <img
               src={imageUrl}
               alt={`Certificate of Appreciation for ${recipientName || "Evaluator"}`}
-              className="w-full h-auto object-contain block transition-transform duration-300 group-hover:scale-[1.006]"
+              className={cn(
+                "object-contain block transition-transform duration-300 group-hover:scale-[1.006]",
+                fitHeight ? "max-h-[52vh] w-auto max-w-full" : "w-full h-auto"
+              )}
             />
 
             {/* Click to Zoom Overlay Hint */}

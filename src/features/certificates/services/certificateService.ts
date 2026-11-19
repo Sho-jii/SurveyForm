@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import { createClient } from "@/services/supabase/client";
-import { SurveySignatory } from "@/features/surveys/types";
+import { Survey, SurveyResponse, SurveySignatory } from "@/features/surveys/types";
 import { renderCertificateToCanvas } from "../utils/certificateCanvasRenderer";
 import {
   JARIB_SIGNATURE_BASE64,
@@ -286,6 +286,148 @@ export const certificateService = {
     }
 
     return null;
+  },
+
+  async getCertificateForResponse(
+    response: SurveyResponse,
+    survey: Survey
+  ): Promise<{ cert: SurveyCertificate; qrDataUrl: string }> {
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "http://localhost:3020";
+
+    const supabase = createClient();
+    let foundCert: SurveyCertificate | null = null;
+
+    if (supabase) {
+      try {
+        // 1. Try to find by response_id in survey_certificates
+        const { data, error } = await supabase
+          .from("survey_certificates")
+          .select("*")
+          .eq("response_id", response.id)
+          .maybeSingle();
+
+        if (data && !error) {
+          const meta = (data.metadata || {}) as any;
+          foundCert = {
+            ...data,
+            signatories:
+              meta.signatories || survey.schema?.settings?.signatories || survey.signatories || null,
+            signatory_name:
+              data.signatory_name ||
+              survey.signatory_name ||
+              survey.schema?.settings?.signatoryName ||
+              null,
+            signatory_title:
+              data.signatory_title ||
+              survey.signatory_title ||
+              survey.schema?.settings?.signatoryTitle ||
+              null,
+            signatory_organization:
+              data.signatory_organization ||
+              survey.signatory_organization ||
+              survey.schema?.settings?.signatoryOrganization ||
+              null,
+            signatory_signature_url:
+              data.signatory_signature_url ||
+              survey.signatory_signature_url ||
+              survey.schema?.settings?.signatorySignatureUrl ||
+              null,
+            secondary_signatory_name:
+              meta.secondary_signatory_name ||
+              survey.secondary_signatory_name ||
+              survey.schema?.settings?.secondarySignatoryName ||
+              null,
+            secondary_signatory_title:
+              meta.secondary_signatory_title ||
+              survey.secondary_signatory_title ||
+              survey.schema?.settings?.secondarySignatoryTitle ||
+              null,
+            secondary_signatory_organization:
+              meta.secondary_signatory_organization ||
+              survey.secondary_signatory_organization ||
+              survey.schema?.settings?.secondarySignatoryOrganization ||
+              null,
+            secondary_signatory_signature_url:
+              meta.secondary_signatory_signature_url ||
+              survey.secondary_signatory_signature_url ||
+              survey.schema?.settings?.secondarySignatorySignatureUrl ||
+              null,
+            capstone_logo_url:
+              meta.capstone_logo_url ||
+              survey.capstone_logo_url ||
+              survey.schema?.settings?.capstoneLogoUrl ||
+              null,
+            certificate_theme_color:
+              meta.certificate_theme_color ||
+              survey.certificate_theme_color ||
+              survey.schema?.settings?.certificateThemeColor ||
+              "gold",
+          };
+        } else if (response.certificate_code) {
+          // 2. Try by certificate_code
+          const byCode = await this.getCertificateByCode(response.certificate_code);
+          if (byCode) foundCert = byCode;
+        }
+      } catch (e) {
+        console.warn("Could not query survey_certificates:", e);
+      }
+    }
+
+    // 3. Fallback: construct it cleanly from response and survey
+    if (!foundCert) {
+      const code = response.certificate_code || this.generateCode();
+      foundCert = {
+        id: response.id,
+        certificate_code: code,
+        response_id: response.id,
+        survey_id: survey.id,
+        recipient_name: response.respondent_name || "Valued Research Participant",
+        recipient_role: response.respondent_role,
+        survey_title: survey.title,
+        issued_at: response.created_at,
+        signatories: survey.schema?.settings?.signatories || survey.signatories || null,
+        signatory_name:
+          survey.signatory_name || survey.schema?.settings?.signatoryName || null,
+        signatory_title:
+          survey.signatory_title || survey.schema?.settings?.signatoryTitle || null,
+        signatory_organization:
+          survey.signatory_organization ||
+          survey.schema?.settings?.signatoryOrganization ||
+          null,
+        signatory_signature_url:
+          survey.signatory_signature_url ||
+          survey.schema?.settings?.signatorySignatureUrl ||
+          null,
+        secondary_signatory_name:
+          survey.secondary_signatory_name ||
+          survey.schema?.settings?.secondarySignatoryName ||
+          null,
+        secondary_signatory_title:
+          survey.secondary_signatory_title ||
+          survey.schema?.settings?.secondarySignatoryTitle ||
+          null,
+        secondary_signatory_organization:
+          survey.secondary_signatory_organization ||
+          survey.schema?.settings?.secondarySignatoryOrganization ||
+          null,
+        secondary_signatory_signature_url:
+          survey.secondary_signatory_signature_url ||
+          survey.schema?.settings?.secondarySignatorySignatureUrl ||
+          null,
+        capstone_logo_url:
+          survey.capstone_logo_url || survey.schema?.settings?.capstoneLogoUrl || null,
+        certificate_theme_color:
+          survey.certificate_theme_color ||
+          survey.schema?.settings?.certificateThemeColor ||
+          "gold",
+      };
+    }
+
+    const verificationUrl = `${origin}/verify/${foundCert.certificate_code}`;
+    const qrDataUrl = await this.generateQrCodeDataUrl(verificationUrl);
+
+    return { cert: foundCert, qrDataUrl };
   },
 
   async downloadCertificatePdf(

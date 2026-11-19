@@ -117,6 +117,7 @@ export type SurveyAnswerValue = string | number | string[] | Record<string, numb
 export interface SurveyResponse {
   id: string;
   survey_id: string;
+  certificate_code?: string | null;
   respondent_name: string | null;
   respondent_role: string | null;
   answers: Record<string, SurveyAnswerValue>; // questionId -> answer
